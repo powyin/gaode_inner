@@ -1,0 +1,56 @@
+# Non-project-specific build files:
+.DS_Store
+build.xml
+local.properties
+.gradle
+.idea
+# Ant builds
+ant-build
+ant-gen
+# Eclipse builds
+gen
+out
+# Gradle builds
+*.log
+*.iml:wq
+node_modules
+./node_modules
+./node_modules/*
+dist
+./dist
+./package-lock.json
+package-lock.json
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
