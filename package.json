@@ -10,6 +10,8 @@
   "dependencies": {
     "@amap/amap-jsapi-loader": "^1.0.1",
     "core-js": "^3.6.5",
+    "element-plus": "^2.2.12",
+    "vconsole": "^3.14.6",
     "vue": "^3.0.0",
     "vue-router": "^4.0.0-0"
   },
@@ -41,5 +43,5 @@
     "> 1%",
     "last 2 versions",
     "not dead"
-  ]
+  ] 
 }

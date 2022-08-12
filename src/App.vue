@@ -1,22 +1,18 @@
 <template>
-    <Mapview></Mapview>
+  <router-view></router-view>
 </template>
 <script>
-import Mapview from "./views/MapContainer"
-export default ({
-  name:"App",
-  components: {
-    Mapview
-  },
-  setup() {
-  },
-})
+export default {
+  name: "App",
+  components: {},
+  setup() {},
+};
 </script>
 <style >
-  #app {
-    height: 100%;
-    width: 100%;
-    padding: 0px;
-    margin: 0px;
-  }
+#app {
+  height: 100%;
+  width: 100%;
+  padding: 0px;
+  margin: 0px;
+}
 </style>

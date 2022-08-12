@@ -3,9 +3,10 @@ module.exports = {
      productionSourceMap: false,
      //部署应用包时的基本 URL,用法和 webpack 本身的 output.publicPath 一致
      //可以通过三元运算去配置dev和prod环境, publicPath: process.env.NODE_ENV === 'production' ? '/prod/' : './'
-     publicPath:'/',
+     publicPath:'./',
      //build 时输出的文件目录
      outputDir:'dist',
+     lintOnSave:false,
      //放置静态文件目录
      //assertsDir:'./src/assets',
      //dev环境下，webpack-dev-server相关配置
