@@ -1,7 +1,7 @@
 <template>
   <div>
     <div>
-      <div class="map-title">
+      <div class="map_contain_title_name">
         <div class="arrLeftGo_hint"></div>
         <img
           class="arrLeftGo"
@@ -28,28 +28,27 @@
           @focus="onEditFouceTarget"
         />
       </div>
-
-      <div class="locationSelection" v-show="showLocationList">
-        <div class="locationSelection_divice">
+      <div class="map_contain_title_list" v-show="showLocationList">
+        <div class="map_contain_title_list_divice">
           <div
-            class="locationSelection_location_cont"
+            class="map_contain_title_list_location_cont"
             @click="click_location_current"
           >
             <img
-              class="locationSelection_location_img"
+              class="map_contain_title_list_location_img"
               src="./location_me.png"
             />
-            <div class="locationSelection_location_info">我的位置</div>
+            <div class="map_contain_title_list_location_info">我的位置</div>
           </div>
           <div
-            class="locationSelection_location_cont"
+            class="map_contain_title_list_location_cont"
             @click="click_location_picker"
           >
             <img
-              class="locationSelection_location_img"
+              class="map_contain_title_list_location_img"
               src="./location_select.png"
             />
-            <div class="locationSelection_location_info">地图选点</div>
+            <div class="map_contain_title_list_location_info">地图选点</div>
           </div>
         </div>
 
@@ -70,14 +69,67 @@
 
     <div id="container"></div>
 
-    <div class="containner_contain_layout">
-      <img class="containner_contain_layout_top" src="./arraw_up.png" />
-
+    <div class="map_contain_leve">
+      <img class="map_contain_leve_top" src="./arraw_up.png" />
       <p class="scrollbar-demo-item">F1</p>
       <p class="scrollbar-demo-item">F2</p>
       <p class="scrollbar-demo-item">F3</p>
+      <img class="map_contain_leve_buttom" src="./arraw_down.png" />
+    </div>
 
-      <img class="containner_contain_layout_buttom" src="./arraw_down.png" />
+    <div class="map_contain_road_switch" v-if="markStart && markTarget">
+      <div class="map_road_switch_title">
+        <div
+          class="flex_center"
+          style="flex-direction: column"
+          @click="displayInnor = true"
+        >
+          <div
+            :class="{
+              map_road_select: displayInnor,
+              map_road_unselect: !displayInnor,
+            }"
+          >
+            室内线路
+          </div>
+          <div
+            :class="{
+              map_road_select_line: displayInnor,
+              map_road_unselect_line: !displayInnor,
+            }"
+          ></div>
+        </div>
+
+        <div
+          class="flex_center"
+          style="flex-direction: column"
+          @click="displayInnor = false"
+        >
+          <div
+            :class="{
+              map_road_select: !displayInnor,
+              map_road_unselect: displayInnor,
+            }"
+          >
+            室外线路
+          </div>
+          <div
+            :class="{
+              map_road_select_line: !displayInnor,
+              map_road_unselect_line: displayInnor,
+            }"
+          ></div>
+        </div>
+      </div>
+      <div v-if="!displayInnor" class="driving_out_info">
+        {{ driving_out_info }}
+      </div>
+      <div v-if="!displayInnor" class="driving_out_go" @click="driving_out_go">
+        <img class="driving_out_go_img" src="./driving_out_go.png" />开始导航
+      </div>
+      <div v-if="displayInnor" class="driving_in_go">
+        <img class="driving_out_in_img" src="./driving_out_go.png" />实景导航
+      </div>
     </div>
   </div>
 </template>
@@ -98,9 +150,12 @@ export default {
       showLocationList: false,
       action_fouce_start: false,
       action_fouce_target: false,
+      displayInnor: false,
 
       markStart: "",
       markTarget: "",
+
+      driving_out_info: "1分钟 34米",
 
       searchList: [],
       mapLayoutDataList: [
@@ -130,13 +185,6 @@ export default {
         key: "b456d4037e33b69b32cf75c7f0f5b219", //设置您的key
         version: "2.0",
         plugins: ["AMap.ToolBar", "AMap.Driving"],
-        // AMapUI: {
-        //   version: "1.1",
-        //   plugins: [],
-        // },
-        // Loca: {
-        //   version: "2.0.0",
-        // },
       })
         .then((AMap) => {
           console.log("get amap");
@@ -189,10 +237,29 @@ export default {
     },
 
     drawRoute(route) {
+      let time = route.time;
+      time = Math.floor(time / 60);
+      let driving_out_time = "";
+      let driving_out_road = "";
+      if (time > 60) {
+        let h = Math.floor(time / 60);
+        time = h + "小时-" + (time - h * 60) + "分钟";
+        driving_out_time = time;
+      } else {
+        driving_out_time = time + "分钟";
+      }
+      let distance = route.distance;
+      if (distance > 1000) {
+        distance = distance / 1000;
+        driving_out_road = distance + "公里";
+      } else {
+        driving_out_road = distance + "米";
+      }
+      this.driving_out_info = driving_out_time + "  " + driving_out_road;
+
       var path = [];
       for (var i = 0, l = route.steps.length; i < l; i++) {
         var step = route.steps[i];
-
         for (var j = 0, n = step.path.length; j < n; j++) {
           path.push(step.path[j]);
         }
@@ -205,10 +272,11 @@ export default {
         isOutline: true,
         outlineColor: "#ffeeee",
         borderWeight: 2,
-        strokeWeight: 5,
+        strokeWeight: 6,
         strokeOpacity: 0.9,
         strokeColor: "#0091ff",
         lineJoin: "round",
+        showDir: true,
       });
 
       this.map.add(this.routeLine);
@@ -416,7 +484,7 @@ export default {
 </script>
 <style scoped>
 #container {
-  height: 100%;
+  height: calc(100vh + 50px);
   width: 100%;
   padding: 0px;
   margin: 0px;
@@ -424,12 +492,13 @@ export default {
   left: 0px;
   right: 0px;
 }
-.map-title {
+.map_contain_title_name {
   position: fixed;
   z-index: 10;
   width: 100%;
   min-height: 5.65rem;
   background-color: #ffffff;
+  top: 0px;
 }
 
 .arrLeftGo {
@@ -505,16 +574,21 @@ export default {
   outline: none;
 }
 
-.locationSelection {
+.map_contain_title_list {
   position: relative;
-  top: 5.65rem;
+  top: 0;
+  padding-top: 5.64rem;
+  left: 0px;
+  right: 0px;
   width: 100vw;
-  min-height: calc(100vh - 5.65rem);
+  box-sizing: border-box;
+  min-height: 100vh;
+
   background-color: #ffffff;
   z-index: 5;
 }
 
-.locationSelection_divice {
+.map_contain_title_list_divice {
   background-color: #f8f8f8;
   width: 100vw;
   height: 4.1rem;
@@ -523,7 +597,7 @@ export default {
   justify-content: space-around;
 }
 
-.locationSelection_location_cont {
+.map_contain_title_list_location_cont {
   background-color: #ffffff;
   width: 40vw;
   height: 2.6rem;
@@ -533,11 +607,11 @@ export default {
   justify-content: center;
 }
 
-.locationSelection_location_img {
+.map_contain_title_list_location_img {
   width: 1.3rem;
   height: 1.3rem;
 }
-.locationSelection_location_info {
+.map_contain_title_list_location_info {
   font-size: 0.9rem;
   color: #69737c;
   margin-left: 0.5rem;
@@ -598,11 +672,11 @@ export default {
   color: #3065db;
   line-height: 1;
 }
-.containner_contain_layout {
+.map_contain_leve {
   position: fixed;
   width: 1.8rem;
   left: 1.2rem;
-  bottom: 7.8rem;
+  bottom: 8.5rem;
   background-color: #ffffff;
   border-radius: 2rem;
   box-shadow: 0px 0px 6px #888888;
@@ -611,7 +685,7 @@ export default {
   z-index: 2;
 }
 
-.containner_contain_layout_top {
+.map_contain_leve_top {
   width: 1.8rem;
   height: 1.8rem;
   box-sizing: border-box;
@@ -619,7 +693,7 @@ export default {
   border-radius: 2rem;
 }
 
-.containner_contain_layout_buttom {
+.map_contain_leve_buttom {
   width: 1.8rem;
   height: 1.8rem;
   box-sizing: border-box;
@@ -637,6 +711,122 @@ export default {
   font-size: 0.8rem;
   box-sizing: border-box;
   padding-top: 0.1rem;
+}
+
+.map_contain_road_switch {
+  position: fixed;
+  bottom: 0px;
+  width: 100vw;
+  height: 7.8rem;
+  background: #ffffff;
+  z-index: 5;
+}
+
+.flex_center {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+.map_road_switch_title {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  box-sizing: border-box;
+  width: 100vw;
+  padding-left: 10vw;
+  padding-right: 10vw;
+  background-color: rgba(245, 247, 255, 1);
+  box-sizing: border-box;
+  padding-top: 0.8rem;
+  padding-bottom: 0.35rem;
+}
+.map_road_select {
+  color: rgba(48, 101, 219, 1);
+  font-size: 0.9rem;
+  box-sizing: border-box;
+  padding-bottom: 0.5rem;
+  line-height: 1;
+}
+.map_road_select_line {
+  background-color: rgba(48, 101, 219, 1);
+  width: 1.2rem;
+  height: 0.1rem;
+}
+.map_road_unselect {
+  color: rgba(141, 153, 165, 1);
+  font-size: 0.9rem;
+  box-sizing: border-box;
+  padding-bottom: 0.5rem;
+  line-height: 1;
+}
+.map_road_unselect_line {
+  background-color: #00000000;
+  width: 1.2rem;
+  height: 0.1rem;
+}
+.driving_out_info {
+  display: block;
+  width: 100vw;
+  box-sizing: border-box;
+  padding-top: 0.5rem;
+  font-size: 1rem;
+  padding-bottom: 0.8rem;
+  line-height: 1;
+  padding-left: 2.1rem;
+  color: rgba(45, 51, 57, 1);
+}
+
+.driving_out_go {
+  width: calc(100vw - 3.9rem);
+  border-radius: 1.2rem;
+  margin-left: 1.9rem;
+  box-sizing: border-box;
+  padding-top: 0.45rem;
+  font-size: 1rem;
+  padding-bottom: 0.5rem;
+  line-height: 1;
+  padding-left: 1.6rem;
+  color: #ffffff;
+  background-color: rgba(48, 101, 219, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.driving_out_go_img {
+  display: block;
+  width: 1rem;
+  height: 1.1rem;
+  margin-right: 0.5rem;
+  padding-top: 0.1rem;
+  box-sizing: border-box;
+}
+
+.driving_in_go {
+  width: calc(100vw - 3.9rem);
+  border-radius: 1.2rem;
+  margin-left: 1.9rem;
+  margin-top: 2.3rem;
+  box-sizing: border-box;
+  padding-top: 0.45rem;
+  font-size: 1rem;
+  padding-bottom: 0.5rem;
+  line-height: 1;
+  padding-left: 1.6rem;
+  color: #ffffff;
+  background-color: rgba(48, 101, 219, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.driving_out_in_img {
+  display: block;
+  width: 1rem;
+  height: 1.1rem;
+  margin-right: 0.5rem;
+  padding-top: 0.1rem;
+  box-sizing: border-box;
 }
 </style>
 
