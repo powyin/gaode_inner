@@ -155,7 +155,7 @@ export default {
       markStart: "",
       markTarget: "",
 
-      driving_out_info: "1分钟 34米",
+      driving_out_info: "未知",
 
       searchList: [],
       mapLayoutDataList: [
