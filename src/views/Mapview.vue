@@ -3,23 +3,28 @@
     <div>
       <div class="map-title">
         <div class="arrLeftGo_hint"></div>
-        <img class="arrLeftGo" src="./left_arraw.png" @click="goBack" />
+        <img
+          class="arrLeftGo"
+          src="./left_arraw.png"
+          @click="showLocationList = false"
+        />
         <img class="arrLeftGo_switch_road" src="./switch_road_icon.png" />
         <img
           class="arrLeftGo_switch"
           src="./switch_road.png"
           @click="switch_road"
         />
+
         <input
           class="road_start"
           placeholder="请输入起点"
-          v-model="edit_road_start"
+          v-model="edit_road_start.name"
           @focus="onEditFouceStart"
         />
         <input
           class="road_target"
           placeholder="请输入终点"
-          v-model="edit_road_target"
+          v-model="edit_road_target.name"
           @focus="onEditFouceTarget"
         />
       </div>
@@ -94,8 +99,8 @@ export default {
       action_fouce_start: false,
       action_fouce_target: false,
 
-      edit_road_start: "我的位置",
-      edit_road_target: "",
+      markStart: "",
+      markTarget: "",
 
       searchList: [],
       mapLayoutDataList: [
@@ -108,7 +113,17 @@ export default {
       top: 0,
     };
   },
-  create() {},
+  computed: {
+    edit_road_target() {
+      return this.$store.state.point_target;
+    },
+    edit_road_start() {
+      return this.$store.state.point_start;
+    },
+  },
+  create() {
+    console.log("create");
+  },
   methods: {
     ininMap() {
       AMapLoader.load({
@@ -124,25 +139,13 @@ export default {
         // },
       })
         .then((AMap) => {
+          console.log("get amap");
+          this.AMap = AMap;
           this.map = new AMap.Map("container", {
             zoom: 15,
             zooms: [2, 22],
             center: [103.684725, 36.085586],
           });
-
-          let positionArr = [
-            [113.357224, 34.977186],
-            [114.555528, 37.727903],
-            [112.106257, 36.962733],
-            [109.830097, 31.859027],
-            [116.449181, 39.98614],
-          ];
-          for (let item of positionArr) {
-            let marker = new AMap.Marker({
-              position: [item[0], item[1]],
-            });
-            this.map.add(marker);
-          }
 
           var xyzTileLayer = new AMap.TileLayer({
             // 图块取图地址
@@ -152,6 +155,7 @@ export default {
           });
 
           this.map.add(xyzTileLayer);
+          this.doRoadComputer();
         })
         .catch((e) => {
           console.log(e);
@@ -163,10 +167,6 @@ export default {
       this.action_fouce_start = true;
       this.action_fouce_target = false;
     },
-
-    onEditChangeTarget(v1) {
-      console.log(this.edit_road_target);
-    },
     onEditFouceTarget() {
       console.log("foucus onEditFouceTarget ");
       this.showLocationList = true;
@@ -175,81 +175,187 @@ export default {
     },
     click_location_current() {
       if (this.action_fouce_start) {
-        this.edit_road_start = "我的位置";
+        this.$store.commit("SET_POINT_START", {
+          pos: [],
+          name: "我的位置",
+        });
       }
       if (this.action_fouce_target) {
-        this.edit_road_target = "我的位置";
+        this.$store.commit("SET_POINT_TARGET", {
+          pos: [],
+          name: "我的位置",
+        });
       }
     },
-    click_location_picker() {},
 
-    goBack() {
-      this.showLocationList = false;
+    doRoadComputer() {
+      console.log("doRoadComputer");
+      if (!this.AMap) {
+        return;
+      }
+
+      if (this.markStart) {
+        this.map.remove(this.markStart);
+      }
+      let start = this.edit_road_start;
+      if (!start || !start.name || !start.lat) {
+        if (
+          this.$route.query.sn &&
+          this.$route.query.slat &&
+          this.$route.query.slng
+        ) {
+          let start = {
+            lng: this.$route.query.slng,
+            lat: this.$route.query.slat,
+            name: this.$route.query.sn,
+          };
+          this.$store.commit("SET_POINT_START", start);
+        }
+      }
+
+      if (start && start.name && start.lng && start.lat) {
+        this.markStart = new this.AMap.LabelMarker({
+          icon: {
+            image: "https://tsimg.supconit.net/demo/LZSport/map/pop.png",
+            size: [23, 33],
+          },
+          position: [start.lng, start.lat],
+          anchor: "bottom-center",
+        });
+        this.map.add(this.markStart);
+      }
+
+      if (this.markTarget) {
+        this.map.remove(this.markTarget);
+      }
+      let target = this.edit_road_target;
+      if (!target || !target.name || !target.lat) {
+        if (
+          this.$route.query.tn &&
+          this.$route.query.tlat &&
+          this.$route.query.tlng
+        ) {
+          target = {
+            lng: this.$route.query.tlng,
+            lat: this.$route.query.tlat,
+            name: this.$route.query.tn,
+          };
+          this.$store.commit("SET_POINT_TARGET", target);
+        }
+      }
+
+      if (target && target.name && target.lng && target.lat) {
+        this.markTarget = new this.AMap.LabelMarker({
+          icon: {
+            image:
+              "https://a.amap.com/jsapi_demos/static/demo-center/icons/poi-marker-default.png",
+            size: [23, 33],
+          },
+          position: [target.lng, target.lat],
+          anchor: "bottom-center",
+        });
+        this.map.add(this.markTarget);
+      }
+
+      //todo 路径计算
+    },
+
+    click_location_picker() {
+      this.$router.push({
+        path: "/mapselectlocation",
+      });
     },
   },
   watch: {
-    edit_road_start(curVal, oldVal) {
-      if (
-        "我的位" == curVal ||
-        "我的置" == curVal ||
-        "的位置" == curVal ||
-        "我位置" == curVal
-      ) {
-        this.edit_road_start = "";
-        return;
-      }
-      if (this.edit_road_start == "我的位置" || !this.edit_road_start) {
-        this.searchList = [];
-      } else {
-        this.searchList = [
-          { name: "电梯", des: "this is my way" },
-          { name: "电梯", des: "this is my way" },
-          { name: "电梯", des: "this is my way" },
-          { name: "电梯", des: "this is my way" },
-          { name: "电梯", des: "this is my way" },
-          { name: "电梯", des: "this is my way" },
-          { name: "电梯", des: "this is my way" },
-          { name: "电梯", des: "this is my way" },
-          { name: "电梯", des: "this is my way" },
-          { name: "电梯", des: "this is my way" },
-          { name: "电梯", des: "this is my way" },
-          { name: "电梯", des: "this is my way" },
-        ];
-      }
+    edit_road_start: {
+      handler(newValue, oldVal) {
+        console.log("handle start");
+        console.log(newValue);
+        let curVal = newValue.name;
+        if (
+          "我的位" == curVal ||
+          "我的置" == curVal ||
+          "的位置" == curVal ||
+          "我位置" == curVal
+        ) {
+          newValue.name = "";
+          newValue.ln = [];
+          this.doRoadComputer();
+          return;
+        }
+        this.doRoadComputer();
+
+        if (curVal == "我的位置" || !curVal) {
+          this.searchList = [];
+        } else {
+          this.searchList = [
+            { name: "电梯", des: "this is my way" },
+            { name: "电梯", des: "this is my way" },
+            { name: "电梯", des: "this is my way" },
+            { name: "电梯", des: "this is my way" },
+            { name: "电梯", des: "this is my way" },
+            { name: "电梯", des: "this is my way" },
+            { name: "电梯", des: "this is my way" },
+            { name: "电梯", des: "this is my way" },
+            { name: "电梯", des: "this is my way" },
+            { name: "电梯", des: "this is my way" },
+            { name: "电梯", des: "this is my way" },
+            { name: "电梯", des: "this is my way" },
+          ];
+        }
+        console.log(this.searchList);
+      },
+      deep: true,
     },
-    edit_road_target(curVal, oldVal) {
-      if (
-        "我的位" == curVal ||
-        "我的置" == curVal ||
-        "的位置" == curVal ||
-        "我位置" == curVal
-      ) {
-        this.edit_road_target = "";
-        return;
-      }
-      if (this.edit_road_target == "我的位置" || !this.edit_road_target) {
-        this.searchList = [];
-      } else {
-        this.searchList = [
-          { name: "电梯", des: "this is my way" },
-          { name: "电梯", des: "this is my way" },
-          { name: "电梯", des: "this is my way" },
-          { name: "电梯", des: "this is my way" },
-          { name: "电梯", des: "this is my way" },
-          { name: "电梯", des: "this is my way" },
-          { name: "电梯", des: "this is my way" },
-          { name: "电梯", des: "this is my way" },
-          { name: "电梯", des: "this is my way" },
-          { name: "电梯", des: "this is my way" },
-          { name: "电梯", des: "this is my way" },
-          { name: "电梯", des: "this is my way" },
-        ];
-      }
+    edit_road_target: {
+      handler(newValue, oldVal) {
+        // console.log("handle target");
+        // console.log(newValue);
+        let curVal = newValue.name;
+        if (
+          "我的位" == curVal ||
+          "我的置" == curVal ||
+          "的位置" == curVal ||
+          "我位置" == curVal
+        ) {
+          newValue.name = "";
+          newValue.ln = [];
+          this.doRoadComputer();
+          return;
+        }
+        this.doRoadComputer();
+
+        if (curVal == "我的位置" || !curVal) {
+          this.searchList = [];
+        } else {
+          this.searchList = [
+            { name: "电梯", des: "this is my way" },
+            { name: "电梯", des: "this is my way" },
+            { name: "电梯", des: "this is my way" },
+            { name: "电梯", des: "this is my way" },
+            { name: "电梯", des: "this is my way" },
+            { name: "电梯", des: "this is my way" },
+            { name: "电梯", des: "this is my way" },
+            { name: "电梯", des: "this is my way" },
+            { name: "电梯", des: "this is my way" },
+            { name: "电梯", des: "this is my way" },
+            { name: "电梯", des: "this is my way" },
+            { name: "电梯", des: "this is my way" },
+          ];
+        }
+      },
+      deep: true,
     },
   },
+
   mounted() {
-    //DOM初始化完成进行地图初始化
-    this.ininMap();
+    if (!this.inInit) {
+      this.ininMap();
+      this.inInit = true;
+    }
+    setTimeout(() => {
+      this.doRoadComputer();
+    }, 100);
   },
 };
 </script>
@@ -437,43 +543,49 @@ export default {
   color: #3065db;
   line-height: 1;
 }
-
 .containner_contain_layout {
   position: fixed;
-  width: 2.3rem;
-  height: 9.6rem;
-  left: 1.8rem;
-  bottom: 16rem;
+  width: 1.8rem;
+  left: 1.2rem;
+  bottom: 7.8rem;
   background-color: #ffffff;
-  border-radius: 1.9rem;
+  border-radius: 2rem;
+  box-shadow: 0px 0px 6px #888888;
+  padding: 0px;
+  margin: 0px;
   z-index: 2;
 }
 
 .containner_contain_layout_top {
-  width: 2.3rem;
-  height: 2.3rem;
+  width: 1.8rem;
+  height: 1.8rem;
   box-sizing: border-box;
   padding: 0.5rem;
+  border-radius: 2rem;
 }
 
 .containner_contain_layout_buttom {
-  width: 2.3rem;
-  height: 2.3rem;
+  width: 1.8rem;
+  height: 1.8rem;
   box-sizing: border-box;
   padding: 0.5rem;
-}
-
-.containner_contain_layout::-webkit-scrollbar {
-  display: none;
+  border-radius: 2rem;
 }
 
 .scrollbar-demo-item {
-  height: 1.6rem;
+  height: 1.68rem;
   width: 100%;
   text-align: center;
   color: #3065db;
   margin-top: 0px;
   margin-bottom: 0px;
-  font-size: 1.0rem;
+  font-size: 0.8rem;
+  box-sizing: border-box;
+  padding-top: 0.1rem;
 }
 </style>
+
+
+
+
+ 
