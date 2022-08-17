@@ -216,7 +216,7 @@ export default {
       if (start && start.name && start.lng && start.lat) {
         this.markStart = new this.AMap.LabelMarker({
           icon: {
-            image: "https://tsimg.supconit.net/demo/LZSport/map/pop.png",
+            image: "https://tsimg.supconit.net/demo/LZSport/map/pop_start.png",
             size: [23, 33],
           },
           position: [start.lng, start.lat],
@@ -248,7 +248,7 @@ export default {
         this.markTarget = new this.AMap.LabelMarker({
           icon: {
             image:
-              "https://a.amap.com/jsapi_demos/static/demo-center/icons/poi-marker-default.png",
+              "https://tsimg.supconit.net/demo/LZSport/map/pop_end.png",
             size: [23, 33],
           },
           position: [target.lng, target.lat],
