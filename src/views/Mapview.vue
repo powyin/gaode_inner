@@ -293,26 +293,22 @@ export default {
         start.lat
       ) {
         var drivingOption = {
-          policy: this.AMap.DrivingPolicy.LEAST_TIME, // 其它policy参数请参考 https://lbs.amap.com/api/javascript-api/reference/route-search#m_DrivingPolicy
+          policy: this.AMap.DrivingPolicy.LEAST_TIME,
         };
-
         var driving = new this.AMap.Driving(drivingOption);
         let that = this;
-        // 根据起终点经纬度规划驾车导航路线
         driving.search(
           new this.AMap.LngLat(start.lng, start.lat),
           new this.AMap.LngLat(target.lng, target.lat),
           function (status, result) {
-            // result即是对应的驾车导航信息，相关数据结构文档请参考 https://lbs.amap.com/api/javascript-api/reference/route-search#m_DrivingResult
+            console.log(result);
             if (status === "complete") {
               if (result.routes && result.routes.length) {
-                // 绘制第一条路线，也可以按需求绘制其它几条路线
                 that.drawRoute(result.routes[0]);
                 console.log("绘制驾车路线完成");
               }
             } else {
               console.log("获取驾车数据失败：" + result);
-              console.log(result);
             }
           }
         );
