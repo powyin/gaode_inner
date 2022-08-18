@@ -71,9 +71,34 @@
 
     <div class="map_contain_leve">
       <img class="map_contain_leve_top" src="./arraw_up.png" />
-      <p class="scrollbar-demo-item">F1</p>
-      <p class="scrollbar-demo-item">F2</p>
-      <p class="scrollbar-demo-item">F3</p>
+      <p
+        :class="{
+          'scrollbar-demo-item': mapLayoutDataSelect == 'F2',
+          'scrollbar-demo-item_unselct': mapLayoutDataSelect != 'F2',
+        }"
+        @click="mapLevelSelect('F2')"
+      >
+        F2
+      </p>
+      <p
+        :class="{
+          'scrollbar-demo-item': mapLayoutDataSelect == 'F1',
+          'scrollbar-demo-item_unselct': mapLayoutDataSelect != 'F1',
+        }"
+        @click="mapLevelSelect('F1')"
+      >
+        F1
+      </p>
+
+      <p
+        :class="{
+          'scrollbar-demo-item': mapLayoutDataSelect == 'B1',
+          'scrollbar-demo-item_unselct': mapLayoutDataSelect != 'B1',
+        }"
+        @click="mapLevelSelect('B1')"
+      >
+        B1
+      </p>
       <img class="map_contain_leve_buttom" src="./arraw_down.png" />
     </div>
 
@@ -158,13 +183,26 @@ export default {
       driving_out_info: "未知",
 
       searchList: [],
-      mapLayoutDataList: [
-        {
-          name: "F1",
-          mapUrl: "",
+      mapLayoutDataSelect: "F1",
+      mapLayoutDataList: {
+        F2: {
+          name: "F2",
+          mapUrl: "https://yd-mobile.cn/lanzhou/api/getPng",
           roadPath: {},
         },
-      ],
+        F1: {
+          name: "F1",
+          mapUrl:
+            "https://yd-mobile.cn/lanzhou/api/getPngData?z=[z]&x=[x]&y=[y]",
+          roadPath: {},
+        },
+        B1: {
+          name: "B1",
+          mapUrl: "https://yd-mobile.cn/lanzhou/api/g",
+          roadPath: {},
+        },
+      },
+
       top: 0,
     };
   },
@@ -187,23 +225,14 @@ export default {
         plugins: ["AMap.ToolBar", "AMap.Driving"],
       })
         .then((AMap) => {
-          console.log("get amap");
           this.AMap = AMap;
           this.map = new AMap.Map("container", {
             zoom: 15,
             zooms: [2, 22],
             center: [103.684725, 36.085586],
           });
-
-          var xyzTileLayer = new AMap.TileLayer({
-            // 图块取图地址
-            getTileUrl:
-              "https://yd-mobile.cn/lanzhou/api/getPngData?z=[z]&x=[x]&y=[y]",
-            zIndex: 100,
-          });
-
-          this.map.add(xyzTileLayer);
-          this.doRoadComputer();
+          this.mapDrawLeave();
+          this.processRoadPath();
         })
         .catch((e) => {
           console.log(e);
@@ -236,62 +265,16 @@ export default {
       }
     },
 
-    drawRoute(route) {
-      let time = route.time;
-      time = Math.floor(time / 60);
-      let driving_out_time = "";
-      let driving_out_road = "";
-      if (time > 60) {
-        let h = Math.floor(time / 60);
-        time = h + "小时-" + (time - h * 60) + "分钟";
-        driving_out_time = time;
-      } else {
-        driving_out_time = time + "分钟";
-      }
-      let distance = route.distance;
-      if (distance > 1000) {
-        distance = distance / 1000;
-        driving_out_road = distance + "公里";
-      } else {
-        driving_out_road = distance + "米";
-      }
-      this.driving_out_info = driving_out_time + "  " + driving_out_road;
+    // drawRoadPartOut(route) {
 
-      var path = [];
-      for (var i = 0, l = route.steps.length; i < l; i++) {
-        var step = route.steps[i];
-        for (var j = 0, n = step.path.length; j < n; j++) {
-          path.push(step.path[j]);
-        }
-      }
-      if (this.routeLine) {
-        this.map.remove(this.routeLine);
-      }
-      this.routeLine = new this.AMap.Polyline({
-        path: path,
-        isOutline: true,
-        outlineColor: "#ffeeee",
-        borderWeight: 2,
-        strokeWeight: 6,
-        strokeOpacity: 0.9,
-        strokeColor: "#0091ff",
-        lineJoin: "round",
-        showDir: true,
-      });
+    // },
 
-      this.map.add(this.routeLine);
-      this.map.setFitView([this.markStart, this.markTarget, this.routeLine]);
-    },
-
-    doRoadComputer() {
-      console.log("doRoadComputer");
+    processRoadPath() {
+      console.log("processRoadPath");
       if (!this.AMap) {
         return;
       }
 
-      if (this.markStart) {
-        this.map.remove(this.markStart);
-      }
       let start = this.edit_road_start;
       if (!start || !start.name || !start.lat) {
         if (
@@ -308,21 +291,6 @@ export default {
         }
       }
 
-      if (start && start.name && start.lng && start.lat) {
-        this.markStart = new this.AMap.LabelMarker({
-          icon: {
-            image: "https://tsimg.supconit.net/demo/LZSport/map/pop_start.png",
-            size: [25, 30],
-          },
-          position: [start.lng, start.lat],
-          anchor: "bottom-center",
-        });
-        this.map.add(this.markStart);
-      }
-
-      if (this.markTarget) {
-        this.map.remove(this.markTarget);
-      }
       let target = this.edit_road_target;
       if (!target || !target.name || !target.lat) {
         if (
@@ -339,7 +307,41 @@ export default {
         }
       }
 
+      this.mapDrawMark();
+      this.mapDrawPathOutSide();
+    },
+
+    mapLevelSelect(ar) {
+      this.mapLayoutDataSelect = ar;
+      this.mapDrawLeave();
+    },
+
+    mapDrawMark() {
+      if (!this.map) {
+        return;
+      }
+
+      let start = this.edit_road_start;
+      if (start && start.name && start.lng && start.lat) {
+        if (this.markStart) {
+          this.map.remove(this.markStart);
+        }
+        this.markStart = new this.AMap.LabelMarker({
+          icon: {
+            image: "https://tsimg.supconit.net/demo/LZSport/map/pop_start.png",
+            size: [25, 30],
+          },
+          position: [start.lng, start.lat],
+          anchor: "bottom-center",
+        });
+        this.map.add(this.markStart);
+      }
+
+      let target = this.edit_road_target;
       if (target && target.name && target.lng && target.lat) {
+        if (this.markTarget) {
+          this.map.remove(this.markTarget);
+        }
         this.markTarget = new this.AMap.LabelMarker({
           icon: {
             image: "https://tsimg.supconit.net/demo/LZSport/map/pop_end.png",
@@ -350,8 +352,11 @@ export default {
         });
         this.map.add(this.markTarget);
       }
+    },
 
-      //todo 路径规划
+    mapDrawPathOutSide() {
+      let start = this.edit_road_start;
+      let target = this.edit_road_target;
       if (
         target &&
         start &&
@@ -372,7 +377,56 @@ export default {
             console.log(result);
             if (status === "complete") {
               if (result.routes && result.routes.length) {
-                that.drawRoute(result.routes[0]);
+                let route = result.routes[0];
+                let time = route.time;
+                time = Math.floor(time / 60);
+                let driving_out_time = "";
+                let driving_out_road = "";
+                if (time > 60) {
+                  let h = Math.floor(time / 60);
+                  time = h + "小时-" + (time - h * 60) + "分钟";
+                  driving_out_time = time;
+                } else {
+                  driving_out_time = time + "分钟";
+                }
+                let distance = route.distance;
+                if (distance > 1000) {
+                  distance = distance / 1000;
+                  driving_out_road = distance + "公里";
+                } else {
+                  driving_out_road = distance + "米";
+                }
+                that.driving_out_info =
+                  driving_out_time + "  " + driving_out_road;
+
+                var path = [];
+                for (var i = 0, l = route.steps.length; i < l; i++) {
+                  var step = route.steps[i];
+                  for (var j = 0, n = step.path.length; j < n; j++) {
+                    path.push(step.path[j]);
+                  }
+                }
+                if (that.routeLine) {
+                  that.map.remove(that.routeLine);
+                }
+                that.routeLine = new that.AMap.Polyline({
+                  path: path,
+                  isOutline: true,
+                  outlineColor: "#ffeeee",
+                  borderWeight: 2,
+                  strokeWeight: 6,
+                  strokeOpacity: 0.9,
+                  strokeColor: "#0091ff",
+                  lineJoin: "round",
+                  showDir: true,
+                });
+
+                that.map.add(that.routeLine);
+                that.map.setFitView([
+                  that.markStart,
+                  that.markTarget,
+                  that.routeLine,
+                ]);
                 console.log("绘制驾车路线完成");
               }
             } else {
@@ -381,6 +435,26 @@ export default {
           }
         );
       }
+    },
+
+    mapDrawLeave() {
+      let current = this.mapLayoutDataList[this.mapLayoutDataSelect];
+      if (!current) {
+        current = this.mapLayoutDataList["F1"];
+      }
+      if (!this.map) {
+        return;
+      }
+
+      if (this.xyzTileLayer) {
+        this.map.remove(this.xyzTileLayer);
+      }
+      this.xyzTileLayer = new AMap.TileLayer({
+        // 图块取图地址
+        getTileUrl: current.mapUrl,
+        zIndex: 100,
+      });
+      this.map.add(this.xyzTileLayer);
     },
 
     click_location_picker() {
@@ -403,10 +477,10 @@ export default {
         ) {
           newValue.name = "";
           newValue.ln = [];
-          this.doRoadComputer();
+          this.processRoadPath();
           return;
         }
-        this.doRoadComputer();
+        this.processRoadPath();
 
         if (curVal == "我的位置" || !curVal) {
           this.searchList = [];
@@ -443,10 +517,10 @@ export default {
         ) {
           newValue.name = "";
           newValue.ln = [];
-          this.doRoadComputer();
+          this.processRoadPath();
           return;
         }
-        this.doRoadComputer();
+        this.processRoadPath();
 
         if (curVal == "我的位置" || !curVal) {
           this.searchList = [];
@@ -477,7 +551,7 @@ export default {
       this.inInit = true;
     }
     setTimeout(() => {
-      this.doRoadComputer();
+      this.processRoadPath();
     }, 100);
   },
 };
@@ -674,7 +748,7 @@ export default {
 }
 .map_contain_leve {
   position: fixed;
-  width: 1.8rem;
+  width: 1.99rem;
   left: 1.2rem;
   bottom: 8.5rem;
   background-color: #ffffff;
@@ -683,6 +757,10 @@ export default {
   padding: 0px;
   margin: 0px;
   z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .map_contain_leve_top {
@@ -690,7 +768,7 @@ export default {
   height: 1.8rem;
   box-sizing: border-box;
   padding: 0.5rem;
-  border-radius: 2rem;
+  border-radius: 1.8rem;
 }
 
 .map_contain_leve_buttom {
@@ -698,19 +776,31 @@ export default {
   height: 1.8rem;
   box-sizing: border-box;
   padding: 0.5rem;
-  border-radius: 2rem;
+  border-radius: 1.8rem;
 }
 
 .scrollbar-demo-item {
   height: 1.68rem;
-  width: 100%;
   text-align: center;
   color: #3065db;
   margin-top: 0px;
   margin-bottom: 0px;
-  font-size: 0.8rem;
+  font-size: 0.73rem;
   box-sizing: border-box;
-  padding-top: 0.1rem;
+  padding-left: 0.1rem;
+  padding-top: 0.15rem;
+}
+
+.scrollbar-demo-item_unselct {
+  height: 1.68rem;
+  text-align: center;
+  color: rgba(141, 153, 165, 1);
+  margin-top: 0px;
+  margin-bottom: 0px;
+  font-size: 0.73rem;
+  box-sizing: border-box;
+  padding-left: 0.1rem;
+  padding-top: 0.15rem;
 }
 
 .map_contain_road_switch {
@@ -781,9 +871,9 @@ export default {
   border-radius: 1.2rem;
   margin-left: 1.9rem;
   box-sizing: border-box;
-  padding-top: 0.45rem;
-  font-size: 1rem;
-  padding-bottom: 0.5rem;
+  padding-top: 0.6rem;
+  font-size: 0.8rem;
+  padding-bottom: 0.6rem;
   line-height: 1;
   padding-left: 1.6rem;
   color: #ffffff;
@@ -808,9 +898,9 @@ export default {
   margin-left: 1.9rem;
   margin-top: 2.3rem;
   box-sizing: border-box;
-  padding-top: 0.45rem;
-  font-size: 1rem;
-  padding-bottom: 0.5rem;
+  padding-top: 0.6rem;
+  font-size: 0.8rem;
+  padding-bottom: 0.6rem;
   line-height: 1;
   padding-left: 1.6rem;
   color: #ffffff;

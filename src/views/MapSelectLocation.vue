@@ -10,12 +10,38 @@
     </div>
 
     <div id="container"></div>
-    <div class="containner_contain_layout">
-      <img class="containner_contain_layout_top" src="./arraw_up.png" />
-      <p class="scrollbar-demo-item">F1</p>
-      <p class="scrollbar-demo-item">F2</p>
-      <p class="scrollbar-demo-item">F3</p>
-      <img class="containner_contain_layout_buttom" src="./arraw_down.png" />
+
+    <div class="map_contain_leve">
+      <img class="map_contain_leve_top" src="./arraw_up.png" />
+      <p
+        :class="{
+          'scrollbar-demo-item': mapLayoutDataSelect == 'F2',
+          'scrollbar-demo-item_unselct': mapLayoutDataSelect != 'F2',
+        }"
+        @click="mapLevelSelect('F2')"
+      >
+        F2
+      </p>
+      <p
+        :class="{
+          'scrollbar-demo-item': mapLayoutDataSelect == 'F1',
+          'scrollbar-demo-item_unselct': mapLayoutDataSelect != 'F1',
+        }"
+        @click="mapLevelSelect('F1')"
+      >
+        F1
+      </p>
+
+      <p
+        :class="{
+          'scrollbar-demo-item': mapLayoutDataSelect == 'B1',
+          'scrollbar-demo-item_unselct': mapLayoutDataSelect != 'B1',
+        }"
+        @click="mapLevelSelect('B1')"
+      >
+        B1
+      </p>
+      <img class="map_contain_leve_buttom" src="./arraw_down.png" />
     </div>
 
     <div class="containner_contain_select_loc">
@@ -55,15 +81,28 @@ export default {
   },
   data() {
     return {
-      mapLayoutDataList: [
-        {
-          name: "F1",
-          mapUrl: "",
-          roadPath: {},
-        },
-      ],
       top: 0,
       markerLoc: "地图选点",
+
+      mapLayoutDataSelect: "F1",
+      mapLayoutDataList: {
+        F2: {
+          name: "F2",
+          mapUrl: "https://yd-mobile.cn/lanzhou/api/getPng",
+          roadPath: {},
+        },
+        F1: {
+          name: "F1",
+          mapUrl:
+            "https://yd-mobile.cn/lanzhou/api/getPngData?z=[z]&x=[x]&y=[y]",
+          roadPath: {},
+        },
+        B1: {
+          name: "B1",
+          mapUrl: "https://yd-mobile.cn/lanzhou/api/g",
+          roadPath: {},
+        },
+      },
     };
   },
   create() {},
@@ -81,14 +120,7 @@ export default {
             center: [103.684725, 36.085586],
           });
 
-          var xyzTileLayer = new AMap.TileLayer({
-            // 图块取图地址
-            getTileUrl:
-              "https://yd-mobile.cn/lanzhou/api/getPngData?z=[z]&x=[x]&y=[y]",
-            zIndex: 100,
-          });
-
-          this.map.add(xyzTileLayer);
+          this.mapDrawLeave();
 
           let that = this;
           this.map.on("click", function (ev) {
@@ -113,10 +145,35 @@ export default {
         });
     },
 
+    mapLevelSelect(ar) {
+      this.mapLayoutDataSelect = ar;
+      this.mapDrawLeave();
+    },
+
+    mapDrawLeave() {
+      let current = this.mapLayoutDataList[this.mapLayoutDataSelect];
+      if (!current) {
+        current = this.mapLayoutDataList["F1"];
+      }
+      if (!this.map) {
+        return;
+      }
+
+      if (this.xyzTileLayer) {
+        this.map.remove(this.xyzTileLayer);
+      }
+      this.xyzTileLayer = new AMap.TileLayer({
+        // 图块取图地址
+        getTileUrl: current.mapUrl,
+        zIndex: 100,
+      });
+      this.map.add(this.xyzTileLayer);
+    },
+
     location_start() {
       if (this.markerSelectLocation) {
         let postion = this.markerSelectLocation._opts.position;
-        console.log("setPOinter")
+        console.log("setPOinter");
         this.$store.commit("SET_POINT_START", {
           lng: postion[0],
           lat: postion[1],
@@ -352,45 +409,61 @@ export default {
   line-height: 1;
 }
 
-.containner_contain_layout {
+.map_contain_leve {
   position: fixed;
-  width: 1.8rem;
+  width: 1.99rem;
   left: 1.2rem;
-  bottom: 7.8rem;
+  bottom: 8.5rem;
   background-color: #ffffff;
   border-radius: 2rem;
   box-shadow: 0px 0px 6px #888888;
   padding: 0px;
   margin: 0px;
   z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
-.containner_contain_layout_top {
+.map_contain_leve_top {
   width: 1.8rem;
   height: 1.8rem;
   box-sizing: border-box;
   padding: 0.5rem;
-  border-radius: 2rem;
+  border-radius: 1.8rem;
 }
 
-.containner_contain_layout_buttom {
+.map_contain_leve_buttom {
   width: 1.8rem;
   height: 1.8rem;
   box-sizing: border-box;
   padding: 0.5rem;
-  border-radius: 2rem;
+  border-radius: 1.8rem;
 }
 
 .scrollbar-demo-item {
   height: 1.68rem;
-  width: 100%;
   text-align: center;
   color: #3065db;
   margin-top: 0px;
   margin-bottom: 0px;
-  font-size: 0.8rem;
+  font-size: 0.73rem;
   box-sizing: border-box;
-  padding-top: 0.1rem;
+  padding-left: 0.1rem;
+  padding-top: 0.15rem;
+}
+
+.scrollbar-demo-item_unselct {
+  height: 1.68rem;
+  text-align: center;
+  color: rgba(141, 153, 165, 1);
+  margin-top: 0px;
+  margin-bottom: 0px;
+  font-size: 0.73rem;
+  box-sizing: border-box;
+  padding-left: 0.1rem;
+  padding-top: 0.15rem;
 }
 
 .containner_contain_select_loc {
