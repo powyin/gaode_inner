@@ -102,12 +102,15 @@
       <img class="map_contain_leve_buttom" src="./arraw_down.png" />
     </div>
 
-    <div class="map_contain_road_switch" v-if="markStart && markTarget">
+    <div
+      class="map_contain_road_switch"
+      v-if="markStart && markTarget && !drivingInsideOnly"
+    >
       <div class="map_road_switch_title">
         <div
           class="flex_center"
           style="flex-direction: column"
-          @click="displayInnor = true"
+          @click="click_show_road_inside"
         >
           <div
             :class="{
@@ -124,11 +127,10 @@
             }"
           ></div>
         </div>
-
         <div
           class="flex_center"
           style="flex-direction: column"
-          @click="displayInnor = false"
+          @click="click_show_road_outside"
         >
           <div
             :class="{
@@ -156,11 +158,21 @@
         <img class="driving_out_in_img" src="./driving_out_go.png" />实景导航
       </div>
     </div>
+
+    <div
+      class="map_contain_road_switch_only"
+      v-if="markStart && markTarget && drivingInsideOnly"
+    >
+      <div class="driving_in_go_only">
+        <img class="driving_out_in_img" src="./driving_out_go.png" />实景导航
+      </div>
+    </div>
   </div>
 </template>
 <script>
 import AMapLoader from "@amap/amap-jsapi-loader";
 import { shallowRef } from "@vue/reactivity";
+import util from "./util";
 
 export default {
   name: "mapcomtaint",
@@ -180,7 +192,9 @@ export default {
       markStart: "",
       markTarget: "",
 
-      driving_out_info: "未知",
+      drivingInsideOnly: false,
+      driving_out_info: "",
+      driving_middle: { lng: 103.680201, lat: 36.085966 },
 
       searchList: [],
       mapLayoutDataSelect: "F1",
@@ -265,10 +279,6 @@ export default {
       }
     },
 
-    // drawRoadPartOut(route) {
-
-    // },
-
     processRoadPath() {
       console.log("processRoadPath");
       if (!this.AMap) {
@@ -308,7 +318,35 @@ export default {
       }
 
       this.mapDrawMark();
-      this.mapDrawPathOutSide();
+
+      if (start && start.name && start.lat) {
+        if (
+          util.isInPolygon(
+            [start.lng, start.lat],
+            [
+              103.686962, 36.089574, 103.68501, 36.089084, 103.68362, 36.088556,
+              103.681764, 36.087463, 103.68126, 36.087012, 103.680461,
+              36.086072, 103.678948, 36.083817, 103.687402, 36.081728,
+              103.689623, 36.086765, 103.687113, 36.089349,
+            ]
+          )
+        ) {
+          if (this.roadPartOut) {
+            this.map.remove(this.roadPartOut);
+          }
+          if (this.markMiddle) {
+            this.map.remove(this.markMiddle);
+          }
+          this.drivingInsideOnly = true;
+          this.mapDrawPathInSide();
+          console.log("------------------------ in");
+        } else {
+          console.log("------------------------ out");
+          this.drivingInsideOnly = false;
+          this.mapDrawPathInSide();
+          this.mapDrawPathOutSide();
+        }
+      }
     },
 
     mapLevelSelect(ar) {
@@ -354,6 +392,55 @@ export default {
       }
     },
 
+    mapDrawPathInSide() {
+      let start = this.edit_road_start;
+      let target = this.edit_road_target;
+      if (
+        target &&
+        start &&
+        target.lng &&
+        target.lat &&
+        start.lng &&
+        start.lat
+      ) {
+        if (!this.drivingInsideOnly) {
+          if (this.markMiddle) {
+            this.map.remove(this.markMiddle);
+          }
+          this.markMiddle = new this.AMap.LabelMarker({
+            icon: {
+              image: "https://tsimg.supconit.net/demo/LZSport/map/pop.png",
+              size: [25, 35],
+            },
+            position: [this.driving_middle.lng, this.driving_middle.lat],
+            anchor: "bottom-center",
+          });
+          this.map.add(this.markMiddle);
+          start = this.driving_middle;
+        }
+
+        let path = [];
+        path.push(new AMap.LngLat(start.lng, start.lat));
+        path.push(new AMap.LngLat(target.lng, target.lat));
+
+        if (this.roadPartInside) {
+          this.map.remove(this.roadPartInside);
+        }
+        this.roadPartInside = new this.AMap.Polyline({
+          path: path,
+          isOutline: true,
+          outlineColor: "#eedddd",
+          borderWeight: 2,
+          strokeWeight: 6,
+          strokeOpacity: 0.9,
+          strokeColor: "#0088ee",
+          lineJoin: "round",
+          showDir: true,
+        });
+        this.map.add(this.roadPartInside);
+      }
+    },
+
     mapDrawPathOutSide() {
       let start = this.edit_road_start;
       let target = this.edit_road_target;
@@ -372,9 +459,11 @@ export default {
         let that = this;
         driving.search(
           new this.AMap.LngLat(start.lng, start.lat),
-          new this.AMap.LngLat(target.lng, target.lat),
+          new this.AMap.LngLat(
+            this.driving_middle.lng,
+            this.driving_middle.lat
+          ),
           function (status, result) {
-            console.log(result);
             if (status === "complete") {
               if (result.routes && result.routes.length) {
                 let route = result.routes[0];
@@ -406,10 +495,17 @@ export default {
                     path.push(step.path[j]);
                   }
                 }
-                if (that.routeLine) {
-                  that.map.remove(that.routeLine);
+
+                path.push(
+                  new AMap.LngLat(
+                    that.driving_middle.lng,
+                    that.driving_middle.lat
+                  )
+                );
+                if (that.roadPartOut) {
+                  that.map.remove(that.roadPartOut);
                 }
-                that.routeLine = new that.AMap.Polyline({
+                that.roadPartOut = new that.AMap.Polyline({
                   path: path,
                   isOutline: true,
                   outlineColor: "#ffeeee",
@@ -420,12 +516,12 @@ export default {
                   lineJoin: "round",
                   showDir: true,
                 });
+                that.map.add(that.roadPartOut);
 
-                that.map.add(that.routeLine);
                 that.map.setFitView([
                   that.markStart,
                   that.markTarget,
-                  that.routeLine,
+                  that.roadPartOut,
                 ]);
                 console.log("绘制驾车路线完成");
               }
@@ -450,7 +546,6 @@ export default {
         this.map.remove(this.xyzTileLayer);
       }
       this.xyzTileLayer = new AMap.TileLayer({
-        // 图块取图地址
         getTileUrl: current.mapUrl,
         zIndex: 100,
       });
@@ -461,6 +556,14 @@ export default {
       this.$router.push({
         path: "/mapselectlocation",
       });
+    },
+    click_show_road_inside() {
+      this.displayInnor = true;
+      this.map.setFitView([this.roadPartInside]);
+    },
+    click_show_road_outside() {
+      this.displayInnor = false;
+      this.map.setFitView([this.roadPartOut]);
     },
   },
   watch: {
@@ -812,6 +915,15 @@ export default {
   z-index: 5;
 }
 
+.map_contain_road_switch_only {
+  position: fixed;
+  bottom: 0px;
+  width: 100vw;
+  height: 3.8rem;
+  background: #ffffffff;
+  z-index: 5;
+}
+
 .flex_center {
   display: flex;
   align-items: center;
@@ -885,10 +997,10 @@ export default {
 
 .driving_out_go_img {
   display: block;
-  width: 1rem;
+  width: 1.1rem;
   height: 1.1rem;
   margin-right: 0.5rem;
-  padding-top: 0.1rem;
+  padding-top: 0rem;
   box-sizing: border-box;
 }
 
@@ -910,12 +1022,30 @@ export default {
   justify-content: center;
 }
 
+.driving_in_go_only {
+  width: calc(100vw - 3.9rem);
+  border-radius: 1.2rem;
+  margin-left: 1.9rem;
+  margin-top: 0.69rem;
+  box-sizing: border-box;
+  padding-top: 0.6rem;
+  font-size: 0.8rem;
+  padding-bottom: 0.6rem;
+  line-height: 1;
+  padding-left: 1.6rem;
+  color: #ffffff;
+  background-color: rgba(48, 101, 219, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .driving_out_in_img {
   display: block;
-  width: 1rem;
+  width: 1.1rem;
   height: 1.1rem;
   margin-right: 0.5rem;
-  padding-top: 0.1rem;
+  padding-top: 0rem;
   box-sizing: border-box;
 }
 </style>
