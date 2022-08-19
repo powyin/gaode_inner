@@ -411,7 +411,7 @@ export default {
 
 .map_contain_leve {
   position: fixed;
-  width: 1.99rem;
+  width: 2.01rem;
   left: 1.2rem;
   bottom: 8.5rem;
   background-color: #ffffff;
@@ -427,45 +427,54 @@ export default {
 }
 
 .map_contain_leve_top {
-  width: 1.8rem;
-  height: 1.8rem;
+  width: 1.5rem;
+  height: 1.5rem;
   box-sizing: border-box;
-  padding: 0.5rem;
+  padding-left: 0.35rem;
+  padding-right: 0.35rem;
+  padding-top: 0.45rem;
+  padding-bottom: 0.25rem;
   border-radius: 1.8rem;
 }
 
 .map_contain_leve_buttom {
-  width: 1.8rem;
-  height: 1.8rem;
+  width: 1.5rem;
+  height: 1.5rem;
   box-sizing: border-box;
-  padding: 0.5rem;
+  padding-left: 0.35rem;
+  padding-right: 0.35rem;
+  padding-bottom: 0.45rem;
+  padding-top: 0.25rem;
   border-radius: 1.8rem;
 }
 
 .scrollbar-demo-item {
-  height: 1.68rem;
+  height: 1.88rem;
+  width: 100%;
   text-align: center;
-  color: #3065db;
+  color: #ffffff;
+  background-color: #3065db;
   margin-top: 0px;
   margin-bottom: 0px;
   font-size: 0.73rem;
   box-sizing: border-box;
   padding-left: 0.1rem;
-  padding-top: 0.15rem;
+  padding-top: 0.39rem;
 }
 
 .scrollbar-demo-item_unselct {
-  height: 1.68rem;
+  height: 1.88rem;
+  width: 100%;
   text-align: center;
   color: rgba(141, 153, 165, 1);
+  background: #ffffff;
   margin-top: 0px;
   margin-bottom: 0px;
   font-size: 0.73rem;
   box-sizing: border-box;
   padding-left: 0.1rem;
-  padding-top: 0.15rem;
+  padding-top: 0.39rem;
 }
-
 .containner_contain_select_loc {
   position: fixed;
   width: 100vw;
