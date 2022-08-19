@@ -154,7 +154,18 @@
       <div v-if="!displayInnor" class="driving_out_go" @click="driving_out_go">
         <img class="driving_out_go_img" src="./driving_out_go.png" />开始导航
       </div>
-      <div v-if="displayInnor" class="driving_in_go">
+
+      <div
+        v-if="displayInnor && !displayInnorSatus"
+        class="driving_in_go_no_road"
+      >
+        <img class="driving_in_go_no_road_img" src="./driving_out_go_no.png" />
+        <div class="driving_in_go_no_road_text">
+          暂无此方式路线规划，请重新选择
+        </div>
+      </div>
+
+      <div v-if="displayInnor && displayInnorSatus" class="driving_in_go">
         <img class="driving_out_in_img" src="./driving_out_go.png" />实景导航
       </div>
     </div>
@@ -175,6 +186,8 @@
 import AMapLoader from "@amap/amap-jsapi-loader";
 import { shallowRef } from "@vue/reactivity";
 import util from "./util";
+const axios = require("axios").default;
+const qs = require("qs");
 
 export default {
   name: "mapcomtaint",
@@ -190,9 +203,11 @@ export default {
       action_fouce_start: false,
       action_fouce_target: false,
       displayInnor: false,
+      displayInnorSatus: false,
 
       zoom: 5,
       markStart: "",
+      markMiddle: "",
       markTarget: "",
 
       drivingInsideOnly: false,
@@ -253,7 +268,6 @@ export default {
           that.map.on("zoomchange", function (ev) {
             if (ev.type == "zoomchange") {
               that.zoom = that.map.getZoom();
-               
             }
           });
 
@@ -292,11 +306,9 @@ export default {
     },
 
     processRoadPath() {
-      console.log("processRoadPath");
       if (!this.AMap) {
         return;
       }
-
       let start = this.edit_road_start;
       if (!start || !start.name || !start.lat) {
         if (
@@ -332,22 +344,13 @@ export default {
       this.mapDrawMark();
 
       if (start && start.name && start.lat) {
-        if (
-          util.isInPolygon(
-            [start.lng, start.lat],
-            [
-              103.686962, 36.089574, 103.68501, 36.089084, 103.68362, 36.088556,
-              103.681764, 36.087463, 103.68126, 36.087012, 103.680461,
-              36.086072, 103.678948, 36.083817, 103.687402, 36.081728,
-              103.689623, 36.086765, 103.687113, 36.089349,
-            ]
-          )
-        ) {
+        if (util.isInPolygon([start.lng, start.lat])) {
           if (this.roadPartOut) {
             this.map.remove(this.roadPartOut);
           }
           if (this.markMiddle) {
             this.map.remove(this.markMiddle);
+            this.markMiddle = null;
           }
           this.drivingInsideOnly = true;
           this.mapDrawPathInSide();
@@ -407,6 +410,7 @@ export default {
     mapDrawPathInSide() {
       let start = this.edit_road_start;
       let target = this.edit_road_target;
+      let that = this;
       if (
         target &&
         start &&
@@ -418,11 +422,13 @@ export default {
         if (!this.drivingInsideOnly) {
           if (this.markMiddle) {
             this.map.remove(this.markMiddle);
+            this.markMiddle = null;
           }
           this.markMiddle = new this.AMap.LabelMarker({
             icon: {
-              image: "https://tsimg.supconit.net/demo/LZSport/map/pop.png",
-              size: [25, 35],
+              image:
+                "https://tsimg.supconit.net/demo/LZSport/map/pop_through.png",
+              size: [25, 29],
             },
             position: [this.driving_middle.lng, this.driving_middle.lat],
             anchor: "bottom-center",
@@ -431,61 +437,117 @@ export default {
           start = this.driving_middle;
         }
 
-        let path = [];
-        path.push(new AMap.LngLat(start.lng, start.lat));
-        path.push(new AMap.LngLat(target.lng, target.lat));
-
         // path = [];
 
-        let pathIn = [
-          {
-            type: "LineString",
-            coordinates: [
-              [103.67973658926, 36.084090981859],
-              [103.6799055, 36.0843319],
-            ],
-          },
-          {
-            type: "lineString",
-            coordinates: [
-              [103.67973658926, 36.084090981859],
-              [103.67982569228, 36.084028510615],
-              [103.68017810913, 36.083956449553],
-              [103.68067874992, 36.084048661645],
-              [103.68108963115, 36.084314493521],
-              [103.68109723119, 36.084324273326],
-            ],
-          },
-          {
-            type: "LineString",
-            coordinates: [
-              [103.68109723119, 36.084324273326],
-              [103.6813359, 36.0841388],
-            ],
-          },
-        ];
+        axios
+          .post(
+            util.mainUrl + "/routing/indoorNavigation",
+            qs.stringify({
+              startX: parseFloat(start.lng),
+              startY: parseFloat(start.lat),
+              sourceFloor: "f2",
+              endX: parseFloat(target.lng),
+              endY: parseFloat(target.lat),
+              targetFloor: "f2",
+              type: "stairs",
+            })
+          )
+          .then(function (response) {
+            // console.log(response);
+            if (
+              response &&
+              response.status == 200 &&
+              response.data &&
+              response.data.code == "200" &&
+              response.data.data &&
+              response.data.data[0]
+            ) {
+              that.displayInnorSatus = true;
 
-        // for (let item of pathIn) {
-        //   for (let inner of item.coordinates) {
-        //     path.push(new AMap.LngLat(inner[0], inner[1]));
-        //   }
-        // }
+              console.log("--------------------");
+              let innerRoadLenght = 0;
+              let pathRoad = "";
+              let count = 0;
+              try {
+                pathRoad = response.data.data[0].indoorNavigation[0];
+                count = pathRoad.routes.length;
+              } catch (e) {
+                console.log(e);
+              }
+              try {
+                innerRoadLenght = response.data.data[0].length;
+              } catch (e) {
+                console.log(e);
+              }
 
-        if (this.roadPartInside) {
-          this.map.remove(this.roadPartInside);
-        }
-        this.roadPartInside = new this.AMap.Polyline({
-          path: path,
-          isOutline: true,
-          outlineColor: "#eedddd",
-          borderWeight: 2,
-          strokeWeight: 6,
-          strokeOpacity: 0.9,
-          strokeColor: "#0088ee",
-          lineJoin: "round",
-          showDir: true,
-        });
-        this.map.add(this.roadPartInside);
+              if (!count) {
+                that.displayInnorSatus = false;
+                return;
+              }
+
+              // console.log(innerRoadLenght);
+              let currentLng = start;
+              let currentLat = start.lat;
+
+              console.log(pathRoad);
+              let path = [];
+              for (let i = 0; i < pathRoad.routes.length; i++) {
+                let item = pathRoad.routes[i];
+                item = JSON.parse(item);
+                try {
+                  let sLng = item.coordinates[0][0];
+                  let sLat = item.coordinates[0][1];
+                  let eLng = item.coordinates[item.coordinates.length - 1][0];
+                  let eLat = item.coordinates[item.coordinates.length - 1][1];
+                  if (
+                    Math.pow(eLng - currentLng, 2) +
+                      Math.pow(eLat - currentLat) >
+                    Math.pow(sLng - currentLng, 2) + Math.pow(sLat - currentLat)
+                  ) {
+                    item.coordinates.reverse();
+                  }
+                } catch (e) {
+                  console.log(e);
+                }
+                   console.log(item.coordinates);
+                path = path.concat(item.coordinates);
+              }
+
+             // console.log(path);
+
+              // path.push(new AMap.LngLat(start.lng, start.lat));
+              // path.push(new AMap.LngLat(target.lng, target.lat));
+              if (that.roadPartInside) {
+                that.map.remove(that.roadPartInside);
+              }
+              that.roadPartInside = new that.AMap.Polyline({
+                path: path,
+                isOutline: true,
+                outlineColor: "#eedddd",
+                borderWeight: 2,
+                strokeWeight: 6,
+                strokeOpacity: 0.9,
+                strokeColor: "#0088ee",
+                lineJoin: "round",
+                showDir: true,
+              });
+              that.map.add(that.roadPartInside);
+            } else {
+              that.displayInnorSatus = false;
+              if (that.roadPartInside) {
+                that.map.remove(that.roadPartInside);
+                that.roadPartInside = null;
+              }
+            }
+          })
+          .catch(function (error) {
+            console.log(error);
+            that.displayInnorSatus = false;
+            if (that.roadPartInside) {
+              that.map.remove(that.roadPartInside);
+              that.roadPartInside = null;
+            }
+          });
       }
     },
 
@@ -607,11 +669,17 @@ export default {
     },
     click_show_road_inside() {
       this.displayInnor = true;
-      this.map.setFitView([this.roadPartInside], false, [0, 0, 0, 0], 15);
+      let center = [this.markTarget];
+      if (this.markMiddle) {
+        center.push(this.markMiddle);
+      } else if (this.markStart) {
+        center.push(this.markStart);
+      }
+      this.map.setFitView(center, false, [0, 0, 0, 0], 15);
     },
     click_show_road_outside() {
       this.displayInnor = false;
-      this.map.setFitView([this.roadPartOut]);
+      this.map.setFitView();
     },
   },
   watch: {
@@ -1092,6 +1160,18 @@ export default {
   justify-content: center;
 }
 
+.driving_in_go_no_road {
+  width: 100vw;
+  box-sizing: border-box;
+  padding-top: 0.9rem;
+  font-size: 0.8rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
 .driving_in_go_only {
   width: calc(100vw - 3.9rem);
   border-radius: 1.2rem;
@@ -1117,6 +1197,20 @@ export default {
   margin-right: 0.5rem;
   padding-top: 0rem;
   box-sizing: border-box;
+}
+
+.driving_in_go_no_road_img {
+  display: block;
+  width: 1.3rem;
+  height: 1.3rem;
+  box-sizing: border-box;
+}
+.driving_in_go_no_road_text {
+  display: block;
+  color: rgba(141, 153, 165, 1);
+  font-size: 0.8rem;
+  line-height: 1;
+  padding-top: 0.8rem;
 }
 </style>
 

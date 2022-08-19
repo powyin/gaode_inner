@@ -1,6 +1,10 @@
 function isInPolygon(point, points) {
-    console.log(point)
-    console.log(points.length)
+    points = [
+        103.686962, 36.089574, 103.68501, 36.089084, 103.68362, 36.088556,
+        103.681764, 36.087463, 103.68126, 36.087012, 103.680461,
+        36.086072, 103.678948, 36.083817, 103.687402, 36.081728,
+        103.689623, 36.086765, 103.687113, 36.089349,
+    ];
     let px = point[0];
     let py = point[1];
     var n = points.length / 2;
@@ -24,6 +28,7 @@ function isInPolygon(point, points) {
         if (x > px)
             nCross++;
     }
+
     return (nCross % 2 == 1);
 }
 
@@ -48,5 +53,7 @@ function PointInPoly(pt, poly) {
 
 
 export default {
-    isInPolygon
+    isInPolygon,
+    PointInPoly,
+    mainUrl:"http://172.20.10.28:9011"
 }
