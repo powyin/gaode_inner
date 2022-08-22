@@ -486,44 +486,76 @@ export default {
               }
 
               // console.log(innerRoadLenght);
-              let currentLng = start;
+              let currentLng = start.lng;
               let currentLat = start.lat;
 
               console.log(pathRoad);
               let path = [];
+              let originPath = [];
               for (let i = 0; i < pathRoad.routes.length; i++) {
                 let item = pathRoad.routes[i];
                 item = JSON.parse(item);
-                try {
-                  let sLng = item.coordinates[0][0];
-                  let sLat = item.coordinates[0][1];
-                  let eLng = item.coordinates[item.coordinates.length - 1][0];
-                  let eLat = item.coordinates[item.coordinates.length - 1][1];
-                  if (
-                    Math.pow(eLng - currentLng, 2) +
-                      Math.pow(eLat - currentLat) >
-                    Math.pow(sLng - currentLng, 2) + Math.pow(sLat - currentLat)
-                  ) {
-                    item.coordinates.reverse();
-                  }
-                } catch (e) {
-                  console.log(e);
+                switch (item.type) {
+                  case "LineString":
+                    try {
+                      originPath.push(item.coordinates);
+                    } catch (e) {
+                      console.log(e);
+                    }
+                    break;
+                  case "MultiLineString":
+                    try {
+                      for (let det of item.coordinates) {
+                        originPath.push(det);
+                      }
+                    } catch (e) {
+                      console.log(e);
+                    }
+
+                    break;
                 }
-                   console.log(item.coordinates);
-                path = path.concat(item.coordinates);
+              }
+              while (originPath.length) {
+                let select = 0;
+                let maxLen = 100000000;
+                for (let k = 0; k < originPath.length; k++) {
+                  let coor = originPath[k];
+                  let sLng = coor[0][0];
+                  let sLat = coor[0][1];
+                  let eLng = coor[coor.length - 1][0];
+                  let eLat = coor[coor.length - 1][1];
+                  let sLen =
+                    Math.pow(sLng - currentLng, 2) +
+                    Math.pow(sLat - currentLat, 2);
+                  let eLen =
+                    Math.pow(eLng - currentLng, 2) +
+                    Math.pow(eLat - currentLat, 2);
+                  if (eLen < maxLen) {
+                    select = k;
+                    maxLen = eLen;
+                  }
+                  if (sLen < maxLen) {
+                    select = k;
+                    maxLen = sLen;
+                  }
+                  if (sLen > eLen) {
+                    coor.reverse();
+                  }
+                }
+                let selectRoad = originPath[select];
+                currentLng = selectRoad[selectRoad.length - 1][0];
+                currentLat = selectRoad[selectRoad.length - 1][1];
+                path = path.concat(originPath[select]);
+                originPath.splice(select, 1);
               }
 
-             // console.log(path);
-
-              // path.push(new AMap.LngLat(start.lng, start.lat));
-              // path.push(new AMap.LngLat(target.lng, target.lat));
               if (that.roadPartInside) {
                 that.map.remove(that.roadPartInside);
               }
               that.roadPartInside = new that.AMap.Polyline({
                 path: path,
                 isOutline: true,
-                outlineColor: "#eedddd",
+                outlineColor: "#ddcccc",
                 borderWeight: 2,
                 strokeWeight: 6,
                 strokeOpacity: 0.9,
@@ -680,6 +712,17 @@ export default {
     click_show_road_outside() {
       this.displayInnor = false;
       this.map.setFitView();
+    },
+    driving_out_go() {
+      console.log("driving_out_go")
+      wx.openLocation({
+        type: "gcj02",
+        latitude: "30.4553", // 纬度，浮点数，范围为90 ~ -90
+        longitude: "130.325435345", // 经度，浮点数，范围为180 ~ -180。
+        scale: 6, // 地图缩放级别,整形值,范围从1~28。默认为最大
+        name: "这里填写位置名", // 位置名
+        address: "位置名的详情说明", // 地址详情说明
+      });
     },
   },
   watch: {

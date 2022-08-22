@@ -55,5 +55,5 @@ function PointInPoly(pt, poly) {
 export default {
     isInPolygon,
     PointInPoly,
-    mainUrl:"http://172.20.10.28:9011"
+    mainUrl: "http://172.20.10.28:9011"
 }
