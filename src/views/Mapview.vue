@@ -167,6 +167,14 @@
 
       <div
         v-if="displayInnor && displayInnorSatus"
+        class="driving_in_info"
+        @click="driving_in_go"
+      >
+        {{ driving_in_info }}
+      </div>
+
+      <div
+        v-if="displayInnor && displayInnorSatus"
         class="driving_in_go"
         @click="driving_in_go"
       >
@@ -216,6 +224,7 @@ export default {
 
       drivingInsideOnly: false,
       driving_out_info: "",
+      driving_in_info: "未知",
       driving_middle: { lng: 103.680201, lat: 36.085966 },
 
       searchList: [],
@@ -458,7 +467,6 @@ export default {
             })
           )
           .then(function (response) {
-            // console.log(response);
             if (
               response &&
               response.status == 200 &&
@@ -484,13 +492,16 @@ export default {
               } catch (e) {
                 console.log(e);
               }
+              let miRoad = Math.ceil(innerRoadLenght);
+
+              that.driving_in_info =
+                Math.ceil(miRoad / 1.2 / 60) + "分钟 " + miRoad + "米";
 
               if (!count) {
                 that.displayInnorSatus = false;
                 return;
               }
 
-              // console.log(innerRoadLenght);
               let currentLng = start.lng;
               let currentLat = start.lat;
 
@@ -615,7 +626,7 @@ export default {
               if (result.routes && result.routes.length) {
                 let route = result.routes[0];
                 let time = route.time;
-                time = Math.floor(time / 60);
+                time = Math.ceil(time / 60);
                 let driving_out_time = "";
                 let driving_out_road = "";
                 if (time > 60) {
@@ -1165,14 +1176,13 @@ export default {
   display: block;
   width: 100vw;
   box-sizing: border-box;
-  padding-top: 0.5rem;
+  padding-top: 0.6rem;
   font-size: 1rem;
-  padding-bottom: 0.8rem;
+  padding-bottom: 0.6rem;
   line-height: 1;
   padding-left: 2.1rem;
   color: rgba(45, 51, 57, 1);
 }
-
 .driving_out_go {
   width: calc(100vw - 3.9rem);
   border-radius: 1.2rem;
@@ -1199,11 +1209,21 @@ export default {
   box-sizing: border-box;
 }
 
+.driving_in_info {
+  display: block;
+  width: 100vw;
+  box-sizing: border-box;
+  padding-top: 0.6rem;
+  font-size: 1rem;
+  padding-bottom: 0.6rem;
+  line-height: 1;
+  padding-left: 2.1rem;
+  color: rgba(45, 51, 57, 1);
+}
 .driving_in_go {
   width: calc(100vw - 3.9rem);
   border-radius: 1.2rem;
   margin-left: 1.9rem;
-  margin-top: 2.3rem;
   box-sizing: border-box;
   padding-top: 0.6rem;
   font-size: 0.8rem;
