@@ -55,5 +55,7 @@ function PointInPoly(pt, poly) {
 export default {
     isInPolygon,
     PointInPoly,
-    mainUrl: "http://172.20.10.28:9011"
+    mainUrl: "http://172.16.2.50:3000/aoti/navigation"
 }
+
+// http://172.16.2.50:3000/aoti/navigation

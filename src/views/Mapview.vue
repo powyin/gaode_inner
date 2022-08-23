@@ -714,15 +714,14 @@ export default {
       this.map.setFitView();
     },
     driving_out_go() {
-      console.log("driving_out_go")
-      wx.openLocation({
-        type: "gcj02",
-        latitude: "30.4553", // 纬度，浮点数，范围为90 ~ -90
-        longitude: "130.325435345", // 经度，浮点数，范围为180 ~ -180。
-        scale: 6, // 地图缩放级别,整形值,范围从1~28。默认为最大
-        name: "这里填写位置名", // 位置名
-        address: "位置名的详情说明", // 地址详情说明
-      });
+      let target = this.edit_road_target;
+      if (target && target.lng && target.lat) {
+        let quer = "?";
+        quer += "lng=" + target.lng + "&";
+        quer += "lat=" + target.lat;
+        console.log("driving_out_go" + "/pages/yd/openWxMap" + quer);
+        wx.miniProgram.navigateTo({ url: "/pages/yd/openWxMap" + quer });
+      }
     },
   },
   watch: {
