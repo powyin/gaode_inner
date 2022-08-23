@@ -165,7 +165,11 @@
         </div>
       </div>
 
-      <div v-if="displayInnor && displayInnorSatus" class="driving_in_go">
+      <div
+        v-if="displayInnor && displayInnorSatus"
+        class="driving_in_go"
+        @click="driving_in_go"
+      >
         <img class="driving_out_in_img" src="./driving_out_go.png" />实景导航
       </div>
     </div>
@@ -174,7 +178,7 @@
       class="map_contain_road_switch_only"
       v-if="markStart && markTarget && drivingInsideOnly"
     >
-      <div class="driving_in_go_only">
+      <div class="driving_in_go_only" @click="driving_in_go">
         <img class="driving_out_in_img" src="./driving_out_go.png" />实景导航
       </div>
     </div>
@@ -219,13 +223,13 @@ export default {
       mapLayoutDataList: {
         F2: {
           name: "F2",
-          mapUrl: "https://yd-mobile.cn/lanzhou/api/getPngData?z=[z]&x=[x]&y=[y]",
+          mapUrl:
+            "https://yd-mobile.cn/lanzhou/api/getPngData?z=[z]&x=[x]&y=[y]",
           roadPath: {},
         },
         F1: {
           name: "F1",
-          mapUrl:
-            "https://yd-mobile.cn/lanzhou/api/ge",
+          mapUrl: "https://yd-mobile.cn/lanzhou/api/ge",
           roadPath: {},
         },
         B1: {
@@ -263,6 +267,7 @@ export default {
             zoom: 15,
             zooms: [2, 22],
             center: [103.684725, 36.085586],
+            viewMode: "3D",
           });
 
           that.map.on("zoomchange", function (ev) {
@@ -721,6 +726,16 @@ export default {
         quer += "lat=" + target.lat;
         console.log("driving_out_go" + "/pages/yd/openWxMap" + quer);
         wx.miniProgram.navigateTo({ url: "/pages/yd/openWxMap" + quer });
+      }
+    },
+    driving_in_go() {
+      let target = this.edit_road_target;
+      if (target && target.lng && target.lat) {
+        let quer = "?";
+        quer += "lng=" + target.lng + "&";
+        quer += "lat=" + target.lat;
+        console.log("driving_out_go" + "/pages/yd/camera" + quer);
+        wx.miniProgram.navigateTo({ url: "/pages/yd/camera" + quer });
       }
     },
   },
