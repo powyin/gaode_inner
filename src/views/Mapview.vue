@@ -215,17 +215,17 @@ export default {
       driving_middle: { lng: 103.680201, lat: 36.085966 },
 
       searchList: [],
-      mapLayoutDataSelect: "F1",
+      mapLayoutDataSelect: "F2",
       mapLayoutDataList: {
         F2: {
           name: "F2",
-          mapUrl: "https://yd-mobile.cn/lanzhou/api/getPng",
+          mapUrl: "https://yd-mobile.cn/lanzhou/api/getPngData?z=[z]&x=[x]&y=[y]",
           roadPath: {},
         },
         F1: {
           name: "F1",
           mapUrl:
-            "https://yd-mobile.cn/lanzhou/api/getPngData?z=[z]&x=[x]&y=[y]",
+            "https://yd-mobile.cn/lanzhou/api/ge",
           roadPath: {},
         },
         B1: {
