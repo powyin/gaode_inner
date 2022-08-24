@@ -248,25 +248,25 @@ export default {
         F4: {
           name: "F4",
           mapUrl:
-            "http://192.168.2.96:1818/api/getPngData?z=[z]&x=[x]&y=[y]&f=f4",
+            "https://yd-mobile.cn/lanzhou/api/getPngData?z=[z]&x=[x]&y=[y]&f=f4",
           roadPath: {},
         },
         F3: {
           name: "F3",
           mapUrl:
-            "http://192.168.2.96:1818/api/getPngData?z=[z]&x=[x]&y=[y]&f=f3",
+            "https://yd-mobile.cn/lanzhou/api/getPngData?z=[z]&x=[x]&y=[y]&f=f3",
           roadPath: {},
         },
         F2: {
           name: "F2",
           mapUrl:
-            "http://192.168.2.96:1818/api/getPngData?z=[z]&x=[x]&y=[y]&f=f2",
+            "https://yd-mobile.cn/lanzhou/api/getPngData?z=[z]&x=[x]&y=[y]&f=f2",
           roadPath: {},
         },
         F1: {
           name: "F1",
           mapUrl:
-            "http://192.168.2.96:1818/api/getPngData?z=[z]&x=[x]&y=[y]&f=f1",
+            "https://yd-mobile.cn/lanzhou/api/getPngData?z=[z]&x=[x]&y=[y]&f=f1",
           roadPath: {},
         },
         B1: {
