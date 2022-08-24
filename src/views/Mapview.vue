@@ -73,6 +73,24 @@
       <img class="map_contain_leve_top" src="./arraw_up.png" />
       <p
         :class="{
+          'scrollbar-demo-item': mapLayoutDataSelect == 'F4',
+          'scrollbar-demo-item_unselct': mapLayoutDataSelect != 'F4',
+        }"
+        @click="mapLevelSelect('F4')"
+      >
+        F4
+      </p>
+      <p
+        :class="{
+          'scrollbar-demo-item': mapLayoutDataSelect == 'F3',
+          'scrollbar-demo-item_unselct': mapLayoutDataSelect != 'F3',
+        }"
+        @click="mapLevelSelect('F3')"
+      >
+        F3
+      </p>
+      <p
+        :class="{
           'scrollbar-demo-item': mapLayoutDataSelect == 'F2',
           'scrollbar-demo-item_unselct': mapLayoutDataSelect != 'F2',
         }"
@@ -165,11 +183,7 @@
         </div>
       </div>
 
-      <div
-        v-if="displayInnor && displayInnorSatus"
-        class="driving_in_info"
-        @click="driving_in_go"
-      >
+      <div v-if="displayInnor && displayInnorSatus" class="driving_in_info">
         {{ driving_in_info }}
       </div>
 
@@ -229,16 +243,30 @@ export default {
 
       searchList: [],
       mapLayoutDataSelect: "F2",
+      //        "https://yd-mobile.cn/lanzhou/api/getPngData?z=[z]&x=[x]&y=[y]&f=f2",
       mapLayoutDataList: {
+        F4: {
+          name: "F4",
+          mapUrl:
+            "http://192.168.2.96:1818/api/getPngData?z=[z]&x=[x]&y=[y]&f=f4",
+          roadPath: {},
+        },
+        F3: {
+          name: "F3",
+          mapUrl:
+            "http://192.168.2.96:1818/api/getPngData?z=[z]&x=[x]&y=[y]&f=f3",
+          roadPath: {},
+        },
         F2: {
           name: "F2",
           mapUrl:
-            "https://yd-mobile.cn/lanzhou/api/getPngData?z=[z]&x=[x]&y=[y]",
+            "http://192.168.2.96:1818/api/getPngData?z=[z]&x=[x]&y=[y]&f=f2",
           roadPath: {},
         },
         F1: {
           name: "F1",
-          mapUrl: "https://yd-mobile.cn/lanzhou/api/ge",
+          mapUrl:
+            "http://192.168.2.96:1818/api/getPngData?z=[z]&x=[x]&y=[y]&f=f1",
           roadPath: {},
         },
         B1: {
@@ -477,7 +505,6 @@ export default {
             ) {
               that.displayInnorSatus = true;
 
-              console.log("--------------------");
               let innerRoadLenght = 0;
               let pathRoad = "";
               let count = 0;
@@ -586,6 +613,8 @@ export default {
                 that.map.remove(that.roadPartInside);
                 that.roadPartInside = null;
               }
+              // fixed
+              // that.displayInnorSatus = true;
             }
           })
           .catch(function (error) {
@@ -595,6 +624,8 @@ export default {
               that.map.remove(that.roadPartInside);
               that.roadPartInside = null;
             }
+            // fixed
+            // that.displayInnorSatus = true;
           });
       }
     },
@@ -733,8 +764,8 @@ export default {
       let target = this.edit_road_target;
       if (target && target.lng && target.lat) {
         let quer = "?";
-        quer += "lng=" + target.lng + "&";
-        quer += "lat=" + target.lat;
+        quer += "tlng=" + target.lng + "&";
+        quer += "tlat=" + target.lat;
         console.log("driving_out_go" + "/pages/yd/openWxMap" + quer);
         wx.miniProgram.navigateTo({ url: "/pages/yd/openWxMap" + quer });
       }
@@ -743,8 +774,9 @@ export default {
       let target = this.edit_road_target;
       if (target && target.lng && target.lat) {
         let quer = "?";
-        quer += "lng=" + target.lng + "&";
-        quer += "lat=" + target.lat;
+        quer += "tn=" + target.name + "&";
+        quer += "tlng=" + target.lng + "&";
+        quer += "tlat=" + target.lat;
         console.log("driving_out_go" + "/pages/yd/camera" + quer);
         wx.miniProgram.navigateTo({ url: "/pages/yd/camera" + quer });
       }
@@ -1120,7 +1152,7 @@ export default {
 
 .zoom_show {
   position: fixed;
-  top: 8rem;
+  top: 13rem;
   right: 2rem;
   background: #ffffffff;
   padding-left: 1rem;
