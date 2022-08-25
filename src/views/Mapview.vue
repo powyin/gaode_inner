@@ -176,6 +176,7 @@
       <div
         v-if="displayInnor && !displayInnorSatus"
         class="driving_in_go_no_road"
+        @click="driving_in_go"
       >
         <img class="driving_in_go_no_road_img" src="./driving_out_go_no.png" />
         <div class="driving_in_go_no_road_text">
@@ -1164,8 +1165,12 @@ export default {
 
 .flex_center {
   display: flex;
+  width: 38vw;
+  padding-top: 0.8rem;
+  padding-bottom: 0.35rem;
   align-items: center;
   justify-content: space-around;
+  box-sizing: border-box;
 }
 .map_road_switch_title {
   display: flex;
@@ -1173,12 +1178,12 @@ export default {
   justify-content: space-around;
   box-sizing: border-box;
   width: 100vw;
-  padding-left: 10vw;
-  padding-right: 10vw;
+  padding-left: 8vw;
+  padding-right: 8vw;
   background-color: rgba(245, 247, 255, 1);
   box-sizing: border-box;
-  padding-top: 0.8rem;
-  padding-bottom: 0.35rem;
+  padding-top: 0rem;
+  padding-bottom: 0;
 }
 .map_road_select {
   color: rgba(48, 101, 219, 1);
