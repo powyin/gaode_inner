@@ -789,15 +789,21 @@ export default {
     driving_in_go() {
       let target = this.edit_road_target;
       if (target && target.lng && target.lat) {
-        let quer = "?";
-        quer += "tn=" + target.name + "&";
-        quer += "tlng=" + target.lng + "&";
-        quer += "tlat=" + target.lat;
+        let quer = `?tn=${target.name}&tlng=${target.lng}&tlat=${target.lat}&`;
         if (this.roadPartOutDetail) {
-          quer +=
-            "pathout=" +
-            encodeURIComponent(JSON.stringify(this.roadPartOutDetail)) +
-            "&";
+          let arr = [];
+          try {
+            arr = this.roadPartOutDetail.steps.map((item) => {
+              return {
+                start_location: item.start_location,
+                end_location: item.end_location,
+                instruction: item.instruction,
+              };
+            });
+          } catch (e) {
+            console.log(e);
+          }
+          quer += "pathout=" + encodeURIComponent(JSON.stringify(arr)) + "&";
         }
         if (this.roadPartInsideDetail) {
           quer +=
@@ -805,7 +811,8 @@ export default {
             encodeURIComponent(JSON.stringify(this.roadPartInsideDetail)) +
             "&";
         }
-        console.log("driving_out_go" + "/pages/yd/camera" + quer);
+        // console.log(this.roadPartOutDetail);
+        // console.log("driving_out_go" + "/pages/yd/camera" + quer);
         wx.miniProgram.navigateTo({ url: "/pages/yd/camera" + quer });
       }
     },
