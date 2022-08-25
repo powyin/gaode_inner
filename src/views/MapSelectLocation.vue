@@ -15,6 +15,24 @@
       <img class="map_contain_leve_top" src="./arraw_up.png" />
       <p
         :class="{
+          'scrollbar-demo-item': mapLayoutDataSelect == 'F4',
+          'scrollbar-demo-item_unselct': mapLayoutDataSelect != 'F4',
+        }"
+        @click="mapLevelSelect('F4')"
+      >
+        F4
+      </p>
+      <p
+        :class="{
+          'scrollbar-demo-item': mapLayoutDataSelect == 'F3',
+          'scrollbar-demo-item_unselct': mapLayoutDataSelect != 'F3',
+        }"
+        @click="mapLevelSelect('F3')"
+      >
+        F3
+      </p>
+      <p
+        :class="{
           'scrollbar-demo-item': mapLayoutDataSelect == 'F2',
           'scrollbar-demo-item_unselct': mapLayoutDataSelect != 'F2',
         }"
@@ -84,17 +102,31 @@ export default {
       top: 0,
       markerLoc: "地图选点",
 
-      mapLayoutDataSelect: "F1",
+      mapLayoutDataSelect: "F2",
+      //        "https://yd-mobile.cn/lanzhou/api/getPngData?z=[z]&x=[x]&y=[y]&f=f2",
       mapLayoutDataList: {
+        F4: {
+          name: "F4",
+          mapUrl:
+            "https://yd-mobile.cn/lanzhou/api/getPngData?z=[z]&x=[x]&y=[y]&f=f4",
+          roadPath: {},
+        },
+        F3: {
+          name: "F3",
+          mapUrl:
+            "https://yd-mobile.cn/lanzhou/api/getPngData?z=[z]&x=[x]&y=[y]&f=f3",
+          roadPath: {},
+        },
         F2: {
           name: "F2",
-          mapUrl: "https://yd-mobile.cn/lanzhou/api/getPng",
+          mapUrl:
+            "https://yd-mobile.cn/lanzhou/api/getPngData?z=[z]&x=[x]&y=[y]&f=f2",
           roadPath: {},
         },
         F1: {
           name: "F1",
           mapUrl:
-            "https://yd-mobile.cn/lanzhou/api/getPngData?z=[z]&x=[x]&y=[y]",
+            "https://yd-mobile.cn/lanzhou/api/getPngData?z=[z]&x=[x]&y=[y]&f=f1",
           roadPath: {},
         },
         B1: {

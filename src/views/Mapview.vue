@@ -1238,9 +1238,9 @@ export default {
   display: block;
   width: 100vw;
   box-sizing: border-box;
-  padding-top: 0.6rem;
+  padding-top: 0.75rem;
   font-size: 1rem;
-  padding-bottom: 0.6rem;
+  padding-bottom: 0.75rem;
   line-height: 1;
   padding-left: 2.1rem;
   color: rgba(45, 51, 57, 1);
@@ -1258,7 +1258,7 @@ export default {
 
 .driving_out_go_part_2 {
   width: 38vw;
-  border-radius: 0.3rem;
+  border-radius: 0.45rem;
   box-sizing: border-box;
   padding-top: 0.5rem;
   font-size: 0.8rem;
@@ -1273,7 +1273,7 @@ export default {
 
 .driving_out_go_part_3 {
   width: 40vw;
-  border-radius: 0.3rem;
+  border-radius: 0.45rem;
   box-sizing: border-box;
   padding-top: 0.5rem;
   font-size: 0.8rem;
