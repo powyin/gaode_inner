@@ -657,6 +657,10 @@ export default {
             if (status === "complete") {
               if (result.routes && result.routes.length) {
                 let route = result.routes[0];
+
+                console.log("----------------------------------------");
+                console.log(path);
+                // todo 时间 路程提示
                 let time = route.time;
                 time = Math.ceil(time / 60);
                 let driving_out_time = "";
@@ -678,6 +682,7 @@ export default {
                 that.driving_out_info =
                   driving_out_time + "  " + driving_out_road;
 
+                // todo 线路绘制
                 var path = [];
                 for (var i = 0, l = route.steps.length; i < l; i++) {
                   var step = route.steps[i];
@@ -692,6 +697,9 @@ export default {
                     that.driving_middle.lat
                   )
                 );
+
+                console.log(path);
+
                 if (that.roadPartOut) {
                   that.map.remove(that.roadPartOut);
                 }
