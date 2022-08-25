@@ -166,11 +166,19 @@
           ></div>
         </div>
       </div>
+
       <div v-if="!displayInnor" class="driving_out_info">
         {{ driving_out_info }}
       </div>
-      <div v-if="!displayInnor" class="driving_out_go" @click="driving_out_go">
-        <img class="driving_out_go_img" src="./driving_out_go.png" />开始导航
+
+      <div v-if="!displayInnor" class="driving_out_go">
+        <div class="driving_out_go_part_2" @click="driving_in_go">
+          <img class="driving_out_go_img" src="./driving_out_go.png" />实景导航
+        </div>
+
+        <div class="driving_out_go_part_3" @click="driving_out_go">
+          <img class="driving_out_go_img" src="./driving_out_go.png" />开始导航
+        </div>
       </div>
 
       <div
@@ -397,9 +405,7 @@ export default {
           }
           this.drivingInsideOnly = true;
           this.mapDrawPathInSide();
-          console.log("------------------------ in");
         } else {
-          console.log("------------------------ out");
           this.drivingInsideOnly = false;
           this.mapDrawPathInSide();
           this.mapDrawPathOutSide();
@@ -593,6 +599,8 @@ export default {
                 originPath.splice(select, 1);
               }
 
+              that.roadPartInsideDetail = path;
+
               if (that.roadPartInside) {
                 that.map.remove(that.roadPartInside);
               }
@@ -658,8 +666,8 @@ export default {
               if (result.routes && result.routes.length) {
                 let route = result.routes[0];
 
-                console.log("----------------------------------------");
-                console.log(path);
+                that.roadPartOutDetail = route;
+
                 // todo 时间 路程提示
                 let time = route.time;
                 time = Math.ceil(time / 60);
@@ -697,8 +705,6 @@ export default {
                     that.driving_middle.lat
                   )
                 );
-
-                console.log(path);
 
                 if (that.roadPartOut) {
                   that.map.remove(that.roadPartOut);
@@ -774,7 +780,8 @@ export default {
       if (target && target.lng && target.lat) {
         let quer = "?";
         quer += "tlng=" + target.lng + "&";
-        quer += "tlat=" + target.lat;
+        quer += "tlat=" + target.lat + "&";
+
         console.log("driving_out_go" + "/pages/yd/openWxMap" + quer);
         wx.miniProgram.navigateTo({ url: "/pages/yd/openWxMap" + quer });
       }
@@ -786,6 +793,18 @@ export default {
         quer += "tn=" + target.name + "&";
         quer += "tlng=" + target.lng + "&";
         quer += "tlat=" + target.lat;
+        if (this.roadPartOutDetail) {
+          quer =
+            "pathout=" +
+            encodeURIComponent(JSON.stringify(this.roadPartOutDetail)) +
+            "&";
+        }
+        if (this.roadPartInsideDetail) {
+          quer =
+            "pathin=" +
+            encodeURIComponent(JSON.stringify(this.roadPartInsideDetail)) +
+            "&";
+        }
         console.log("driving_out_go" + "/pages/yd/camera" + quer);
         wx.miniProgram.navigateTo({ url: "/pages/yd/camera" + quer });
       }
@@ -834,8 +853,6 @@ export default {
     },
     edit_road_target: {
       handler(newValue, oldVal) {
-        // console.log("handle target");
-        // console.log(newValue);
         let curVal = newValue.name;
         if (
           "我的位" == curVal ||
@@ -1229,15 +1246,40 @@ export default {
   color: rgba(45, 51, 57, 1);
 }
 .driving_out_go {
-  width: calc(100vw - 3.9rem);
-  border-radius: 1.2rem;
-  margin-left: 1.9rem;
+  width: 100vw;
   box-sizing: border-box;
-  padding-top: 0.6rem;
   font-size: 0.8rem;
-  padding-bottom: 0.6rem;
   line-height: 1;
-  padding-left: 1.6rem;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+}
+
+.driving_out_go_part_2 {
+  width: 38vw;
+  border-radius: 0.3rem;
+  box-sizing: border-box;
+  padding-top: 0.5rem;
+  font-size: 0.8rem;
+  padding-bottom: 0.5rem;
+  line-height: 1;
+  color: #ffffff;
+  background-color: rgb(48, 219, 114);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.driving_out_go_part_3 {
+  width: 40vw;
+  border-radius: 0.3rem;
+  box-sizing: border-box;
+  padding-top: 0.5rem;
+  font-size: 0.8rem;
+  padding-bottom: 0.5rem;
+  line-height: 1;
+
   color: #ffffff;
   background-color: rgba(48, 101, 219, 1);
   display: flex;
