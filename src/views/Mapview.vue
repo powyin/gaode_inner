@@ -794,13 +794,13 @@ export default {
         quer += "tlng=" + target.lng + "&";
         quer += "tlat=" + target.lat;
         if (this.roadPartOutDetail) {
-          quer =
+          quer +=
             "pathout=" +
             encodeURIComponent(JSON.stringify(this.roadPartOutDetail)) +
             "&";
         }
         if (this.roadPartInsideDetail) {
-          quer =
+          quer +=
             "pathin=" +
             encodeURIComponent(JSON.stringify(this.roadPartInsideDetail)) +
             "&";
