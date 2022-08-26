@@ -3,11 +3,7 @@
     <div>
       <div class="map_contain_title_name">
         <div class="arrLeftGo_hint"></div>
-        <img
-          class="arrLeftGo"
-          src="./left_arraw.png"
-          @click="showLocationList = false"
-        />
+        <img class="arrLeftGo" src="./left_arraw.png" @click="click_go_back" />
         <img class="arrLeftGo_switch_road" src="./switch_road_icon.png" />
         <img
           class="arrLeftGo_switch"
@@ -252,7 +248,7 @@ export default {
 
       searchList: [],
       mapLayoutDataSelect: "F2",
-      //        "https://yd-mobile.cn/lanzhou/api/getPngData?z=[z]&x=[x]&y=[y]&f=f2",
+
       mapLayoutDataList: {
         F4: {
           name: "F4",
@@ -294,6 +290,9 @@ export default {
     },
     edit_road_start() {
       return this.$store.state.point_start;
+    },
+    location_current() {
+      return this.$store.state.point_location_current;
     },
   },
   create() {
@@ -342,17 +341,44 @@ export default {
       this.action_fouce_target = true;
     },
     click_location_current() {
+      let current = this.location_current;
       if (this.action_fouce_start) {
-        this.$store.commit("SET_POINT_START", {
-          pos: [],
-          name: "我的位置",
-        });
+        if (current && current.lat) {
+          this.$store.commit("SET_POINT_START", {
+            lng: current.lng,
+            lat: current.lat,
+            name: current.name,
+          });
+        } else {
+          wx.showToast({
+            title: "正在定位中，请稍等",
+            icon: "none",
+            duration: 2000,
+          });
+        }
       }
       if (this.action_fouce_target) {
-        this.$store.commit("SET_POINT_TARGET", {
-          pos: [],
-          name: "我的位置",
-        });
+        if (current && current.lat) {
+          this.$store.commit("SET_POINT_TARGET", {
+            lng: current.lng,
+            lat: current.lat,
+            name: current.name,
+          });
+        } else {
+          wx.showToast({
+            title: "正在定位中，请稍等",
+            icon: "none",
+            duration: 2000,
+          });
+        }
+      }
+
+      if (
+        this.action_fouce_start &&
+        this.action_fouce_start.lat &&
+        this.action_fouce_target &&
+        this.this.action_fouce_target.lat
+      ) {
       }
     },
 
@@ -360,44 +386,15 @@ export default {
       if (!this.AMap) {
         return;
       }
-      let start = this.edit_road_start;
-      if (!start || !start.name || !start.lat) {
-        if (
-          this.$route.query.sn &&
-          this.$route.query.slat &&
-          this.$route.query.slng
-        ) {
-          let start = {
-            lng: this.$route.query.slng,
-            lat: this.$route.query.slat,
-            name: this.$route.query.sn,
-          };
-          this.$store.commit("SET_POINT_START", start);
-        }
-      }
-
-      let target = this.edit_road_target;
-      if (!target || !target.name || !target.lat) {
-        if (
-          this.$route.query.tn &&
-          this.$route.query.tlat &&
-          this.$route.query.tlng
-        ) {
-          target = {
-            lng: this.$route.query.tlng,
-            lat: this.$route.query.tlat,
-            name: this.$route.query.tn,
-          };
-          this.$store.commit("SET_POINT_TARGET", target);
-        }
-      }
 
       this.mapDrawMark();
+      let start = this.edit_road_start;
 
       if (start && start.name && start.lat) {
         if (util.isInPolygon([start.lng, start.lat])) {
           if (this.roadPartOut) {
             this.map.remove(this.roadPartOut);
+            this.roadPartOut = null;
           }
           if (this.markMiddle) {
             this.map.remove(this.markMiddle);
@@ -485,8 +482,6 @@ export default {
           this.map.add(this.markMiddle);
           start = this.driving_middle;
         }
-
-        // path = [];
 
         axios
           .post(
@@ -761,6 +756,7 @@ export default {
         path: "/mapselectlocation",
       });
     },
+
     click_show_road_inside() {
       this.displayInnor = true;
       let center = [this.markTarget];
@@ -771,10 +767,22 @@ export default {
       }
       this.map.setFitView(center, false, [0, 0, 0, 0], 15);
     },
+
     click_show_road_outside() {
       this.displayInnor = false;
       this.map.setFitView();
     },
+
+    click_go_back() {
+      if (this.showLocationList) {
+        this.showLocationList = false;
+      } else {
+        wx.miniProgram.navigateBack({
+          delta: 1,
+        });
+      }
+    },
+
     driving_out_go() {
       let target = this.edit_road_target;
       if (target && target.lng && target.lat) {
@@ -786,6 +794,7 @@ export default {
         wx.miniProgram.navigateTo({ url: "/pages/yd/openWxMap" + quer });
       }
     },
+
     driving_in_go() {
       let target = this.edit_road_target;
       if (target && target.lng && target.lat) {
@@ -839,20 +848,64 @@ export default {
         if (curVal == "我的位置" || !curVal) {
           this.searchList = [];
         } else {
-          this.searchList = [
-            { name: "电梯", des: "this is my way" },
-            { name: "电梯", des: "this is my way" },
-            { name: "电梯", des: "this is my way" },
-            { name: "电梯", des: "this is my way" },
-            { name: "电梯", des: "this is my way" },
-            { name: "电梯", des: "this is my way" },
-            { name: "电梯", des: "this is my way" },
-            { name: "电梯", des: "this is my way" },
-            { name: "电梯", des: "this is my way" },
-            { name: "电梯", des: "this is my way" },
-            { name: "电梯", des: "this is my way" },
-            { name: "电梯", des: "this is my way" },
-          ];
+          let _this = this;
+          wx.request({
+            url: "https://www.yd-mobile.cn/aoti/api/m/facilities/search",
+            method: "GET",
+            data: {
+              latitude: carN,
+            },
+            success(res) {
+              console.log(res);
+              try {
+                let latitude = res.data.data.latitude;
+                let longitude = res.data.data.longitude;
+                if (latitude > longitude) {
+                  let olatitude = latitude;
+                  latitude = longitude;
+                  longitude = olatitude;
+                }
+                let name = res.data.data.plate_no;
+                let floor = res.data.data.floor;
+
+                if (latitude && longitude) {
+                  que += "tn=" + name + "&";
+                  que += "tlng=" + longitude + "&";
+                  que += "tlat=" + latitude + "&";
+                  que += "tf=" + floor + "&";
+                }
+
+                wx.navigateTo({
+                  url: "/pages/yd/map" + que,
+                });
+              } catch (e) {
+                console.log(e);
+              }
+            },
+            fail(info) {
+              wx.showToast({
+                title: "网络开了小差",
+                icon: "none",
+                duration: 2000,
+              });
+              console.log(info);
+            },
+          });
+
+          // this.searchList = [
+          //   { name: "电梯", des: "this is my way" },
+          //   { name: "电梯", des: "this is my way" },
+          //   { name: "电梯", des: "this is my way" },
+          //   { name: "电梯", des: "this is my way" },
+          //   { name: "电梯", des: "this is my way" },
+          //   { name: "电梯", des: "this is my way" },
+          //   { name: "电梯", des: "this is my way" },
+          //   { name: "电梯", des: "this is my way" },
+          //   { name: "电梯", des: "this is my way" },
+          //   { name: "电梯", des: "this is my way" },
+          //   { name: "电梯", des: "this is my way" },
+          //   { name: "电梯", des: "this is my way" },
+          // ];
         }
         console.log(this.searchList);
       },
@@ -902,6 +955,54 @@ export default {
       this.ininMap();
       this.inInit = true;
     }
+
+    // 定位我的位置
+    let current = this.location_current;
+    if (!current || !current.lat || !current.lng) {
+      if (this.$route.query.slat && this.$route.query.slng) {
+        let loc = {
+          lng: this.$route.query.slng,
+          lat: this.$route.query.slat,
+          name: "我的位置",
+        };
+        this.$store.commit("SET_POINT_LOCATION_CURRENT", loc);
+      }
+    }
+
+    // 定位起点
+    let start = this.edit_road_start;
+    if (!start || !start.name || !start.lat) {
+      if (
+        this.$route.query.sn &&
+        this.$route.query.slat &&
+        this.$route.query.slng
+      ) {
+        start = {
+          lng: this.$route.query.slng,
+          lat: this.$route.query.slat,
+          name: this.$route.query.sn,
+        };
+        this.$store.commit("SET_POINT_START", start);
+      }
+    }
+
+    // 定位终点
+    let target = this.edit_road_target;
+    if (!target || !target.name || !target.lat) {
+      if (
+        this.$route.query.tn &&
+        this.$route.query.tlat &&
+        this.$route.query.tlng
+      ) {
+        target = {
+          lng: this.$route.query.tlng,
+          lat: this.$route.query.tlat,
+          name: this.$route.query.tn,
+        };
+        this.$store.commit("SET_POINT_TARGET", target);
+      }
+    }
+
     setTimeout(() => {
       this.processRoadPath();
     }, 100);

@@ -8,6 +8,10 @@ const state = {
     point_target: {
         name: '',
         lg: ''
+    },
+    point_location_current: {
+        name: '',
+        lg: ''
     }
 }
 
@@ -17,6 +21,9 @@ const mutations = {
     },
     SET_POINT_TARGET(state, payload) {
         state.point_target = payload
+    },
+    SET_POINT_LOCATION_CURRENT(state, payload) {
+        state.point_location_current = payload
     },
 }
 
