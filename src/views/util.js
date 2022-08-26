@@ -55,7 +55,7 @@ function PointInPoly(pt, poly) {
 export default {
     isInPolygon,
     PointInPoly,
-    mainUrl: "http://172.16.2.50:3000/aoti/navigation"
+    mainUrl: "https://www.yd-mobile.cn/aoti/navigation"
 }
 
 // http://172.16.2.50:3000/aoti/navigation
