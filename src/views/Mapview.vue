@@ -898,9 +898,9 @@ export default {
             redata.latitude = currentLocation.lat;
             redata.longitude = currentLocation.lng;
           }
-          // https://www.yd-mobile.cn/aoti/api/m/facilities/search latitude=36.085966&longitude=103.680201&name=e&pageNo=1&pageSize=100
+          // https://yd-mobile.cn/aoti/api/m/facilities/search latitude=36.085966&longitude=103.680201&name=e&pageNo=1&pageSize=100
           axios
-            .get("https://www.yd-mobile.cn/aoti/api/m/facilities/search", {
+            .get("https://yd-mobile.cn/aoti/api/m/facilities/search", {
               params: redata,
             })
             .then(function (response) {
@@ -960,9 +960,9 @@ export default {
             redata.latitude = currentLocation.lat;
             redata.longitude = currentLocation.lng;
           }
-          // https://www.yd-mobile.cn/aoti/api/m/facilities/search latitude=36.085966&longitude=103.680201&name=e&pageNo=1&pageSize=100
+          // https://yd-mobile.cn/aoti/api/m/facilities/search latitude=36.085966&longitude=103.680201&name=e&pageNo=1&pageSize=100
           axios
-            .get("https://www.yd-mobile.cn/aoti/api/m/facilities/search", {
+            .get("https://yd-mobile.cn/aoti/api/m/facilities/search", {
               params: redata,
             })
             .then(function (response) {
