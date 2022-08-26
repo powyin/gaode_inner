@@ -89,6 +89,7 @@
 import AMapLoader from "@amap/amap-jsapi-loader";
 import { shallowRef } from "@vue/reactivity";
 import { ElMessage } from "element-plus";
+import util from "./util";
 export default {
   name: "mapcomtaint",
   setup() {
@@ -219,6 +220,13 @@ export default {
     location_target() {
       if (this.markerSelectLocation) {
         let postion = this.markerSelectLocation._opts.position;
+
+        if (!util.isInPolygon([postion[0], postion[1]])) {
+          ElMessage("终点只能选择场馆内部哦");
+          console.log("终点只能选择场馆内部哦");
+          return;
+        }
+
         this.$store.commit("SET_POINT_TARGET", {
           lng: postion[0],
           lat: postion[1],

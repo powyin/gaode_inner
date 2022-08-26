@@ -52,13 +52,16 @@
           class="search_item"
           v-for="(item, index) in searchList"
           :key="index"
+          @click="click_select_serarch_point(item)"
         >
           <img class="search_item_location" src="./location_go.png" />
           <div class="search_item_content">
-            <div class="search_item_content_title">地库A0001</div>
-            <div class="search_item_content_content">兰州奥体中心 | B1</div>
+            <div class="search_item_content_title">{{ item.name }}</div>
+            <div class="search_item_content_content">
+              兰州奥体中心 | {{ item.floorName }}
+            </div>
           </div>
-          <div class="search_item_guide">普通车位</div>
+          <div class="search_item_guide">{{ item.facilitiesTypeName }}</div>
         </div>
       </div>
     </div>
@@ -210,7 +213,7 @@
       </div>
     </div>
 
-    <div class="zoom_show">{{ zoom }}</div>
+    <!-- <div class="zoom_show">{{ zoom }}</div> -->
   </div>
 </template>
 <script>
@@ -328,18 +331,21 @@ export default {
           console.log(e);
         });
     },
+
     onEditFouceStart() {
       console.log("foucus onEditFouceStart ");
       this.showLocationList = true;
       this.action_fouce_start = true;
       this.action_fouce_target = false;
     },
+
     onEditFouceTarget() {
       console.log("foucus onEditFouceTarget ");
       this.showLocationList = true;
       this.action_fouce_start = false;
       this.action_fouce_target = true;
     },
+
     click_location_current() {
       let current = this.location_current;
       if (this.action_fouce_start) {
@@ -374,11 +380,13 @@ export default {
       }
 
       if (
-        this.action_fouce_start &&
-        this.action_fouce_start.lat &&
-        this.action_fouce_target &&
-        this.this.action_fouce_target.lat
+        this.edit_road_target &&
+        this.edit_road_target.lat &&
+        this.edit_road_start &&
+        this.edit_road_start.lat
       ) {
+        this.showLocationList = false;
+        this.processRoadPath();
       }
     },
 
@@ -783,6 +791,33 @@ export default {
       }
     },
 
+    click_select_serarch_point(item) {
+      if (this.action_fouce_start) {
+        this.$store.commit("SET_POINT_START", {
+          lng: item.longitude,
+          lat: item.latitude,
+          name: item.name,
+        });
+      }
+      if (this.action_fouce_target) {
+        this.$store.commit("SET_POINT_TARGET", {
+          lng: item.longitude,
+          lat: item.latitude,
+          name: item.name,
+        });
+      }
+
+      if (
+        this.edit_road_target &&
+        this.edit_road_target.lat &&
+        this.edit_road_start &&
+        this.edit_road_start.lat
+      ) {
+        this.showLocationList = false;
+        this.processRoadPath();
+      }
+    },
+
     driving_out_go() {
       let target = this.edit_road_target;
       if (target && target.lng && target.lat) {
@@ -829,8 +864,9 @@ export default {
   watch: {
     edit_road_start: {
       handler(newValue, oldVal) {
-        console.log("handle start");
         console.log(newValue);
+        let _this = this;
+        let currentLocation = _this.location_current;
         let curVal = newValue.name;
         if (
           "我的位" == curVal ||
@@ -839,80 +875,60 @@ export default {
           "我位置" == curVal
         ) {
           newValue.name = "";
-          newValue.ln = [];
+          newValue.lat = 0;
+          newValue.lng = 0;
+          this.$store.commit("SET_POINT_START", {
+            lng: 0,
+            lat: 0,
+            name: "",
+          });
           this.processRoadPath();
           return;
         }
-        this.processRoadPath();
 
-        if (curVal == "我的位置" || !curVal) {
+        if (curVal == "我的位置") {
           this.searchList = [];
         } else {
-          let _this = this;
-          wx.request({
-            url: "https://www.yd-mobile.cn/aoti/api/m/facilities/search",
-            method: "GET",
-            data: {
-              latitude: carN,
-            },
-            success(res) {
-              console.log(res);
-              try {
-                let latitude = res.data.data.latitude;
-                let longitude = res.data.data.longitude;
-                if (latitude > longitude) {
-                  let olatitude = latitude;
-                  latitude = longitude;
-                  longitude = olatitude;
-                }
-                let name = res.data.data.plate_no;
-                let floor = res.data.data.floor;
-
-                if (latitude && longitude) {
-                  que += "tn=" + name + "&";
-                  que += "tlng=" + longitude + "&";
-                  que += "tlat=" + latitude + "&";
-                  que += "tf=" + floor + "&";
-                }
-
-                wx.navigateTo({
-                  url: "/pages/yd/map" + que,
-                });
-              } catch (e) {
-                console.log(e);
+          let redata = {
+            pageSize: 150,
+            pageNo: 0,
+            name: curVal,
+          };
+          if (currentLocation) {
+            redata.latitude = currentLocation.lat;
+            redata.longitude = currentLocation.lng;
+          }
+          // https://www.yd-mobile.cn/aoti/api/m/facilities/search latitude=36.085966&longitude=103.680201&name=e&pageNo=1&pageSize=100
+          axios
+            .get("https://www.yd-mobile.cn/aoti/api/m/facilities/search", {
+              params: redata,
+            })
+            .then(function (response) {
+              if (
+                response &&
+                response.data &&
+                response.data.data &&
+                response.data.data.length
+              ) {
+                _this.searchList = response.data.data;
+                console.log(response.data.data);
+              } else {
+                _this.searchList = [];
               }
-            },
-            fail(info) {
-              wx.showToast({
-                title: "网络开了小差",
-                icon: "none",
-                duration: 2000,
-              });
-              console.log(info);
-            },
-          });
-
-          // this.searchList = [
-          //   { name: "电梯", des: "this is my way" },
-          //   { name: "电梯", des: "this is my way" },
-          //   { name: "电梯", des: "this is my way" },
-          //   { name: "电梯", des: "this is my way" },
-          //   { name: "电梯", des: "this is my way" },
-          //   { name: "电梯", des: "this is my way" },
-          //   { name: "电梯", des: "this is my way" },
-          //   { name: "电梯", des: "this is my way" },
-          //   { name: "电梯", des: "this is my way" },
-          //   { name: "电梯", des: "this is my way" },
-          //   { name: "电梯", des: "this is my way" },
-          //   { name: "电梯", des: "this is my way" },
-          // ];
+            })
+            .catch(function (error) {
+              _this.searchList = [];
+              console.log(error);
+            });
         }
-        console.log(this.searchList);
       },
       deep: true,
     },
     edit_road_target: {
       handler(newValue, oldVal) {
+        console.log(newValue);
+        let _this = this;
+        let currentLocation = _this.location_current;
         let curVal = newValue.name;
         if (
           "我的位" == curVal ||
@@ -921,29 +937,51 @@ export default {
           "我位置" == curVal
         ) {
           newValue.name = "";
-          newValue.ln = [];
+          newValue.lat = 0;
+          newValue.lng = 0;
+          this.$store.commit("SET_POINT_TARGET", {
+            lng: 0,
+            lat: 0,
+            name: "",
+          });
           this.processRoadPath();
           return;
         }
-        this.processRoadPath();
 
-        if (curVal == "我的位置" || !curVal) {
+        if (curVal == "我的位置") {
           this.searchList = [];
         } else {
-          this.searchList = [
-            { name: "电梯", des: "this is my way" },
-            { name: "电梯", des: "this is my way" },
-            { name: "电梯", des: "this is my way" },
-            { name: "电梯", des: "this is my way" },
-            { name: "电梯", des: "this is my way" },
-            { name: "电梯", des: "this is my way" },
-            { name: "电梯", des: "this is my way" },
-            { name: "电梯", des: "this is my way" },
-            { name: "电梯", des: "this is my way" },
-            { name: "电梯", des: "this is my way" },
-            { name: "电梯", des: "this is my way" },
-            { name: "电梯", des: "this is my way" },
-          ];
+          let redata = {
+            pageSize: 150,
+            pageNo: 0,
+            name: curVal,
+          };
+          if (currentLocation) {
+            redata.latitude = currentLocation.lat;
+            redata.longitude = currentLocation.lng;
+          }
+          // https://www.yd-mobile.cn/aoti/api/m/facilities/search latitude=36.085966&longitude=103.680201&name=e&pageNo=1&pageSize=100
+          axios
+            .get("https://www.yd-mobile.cn/aoti/api/m/facilities/search", {
+              params: redata,
+            })
+            .then(function (response) {
+              if (
+                response &&
+                response.data &&
+                response.data.data &&
+                response.data.data.length
+              ) {
+                _this.searchList = response.data.data;
+                console.log(response.data.data);
+              } else {
+                _this.searchList = [];
+              }
+            })
+            .catch(function (error) {
+              _this.searchList = [];
+              console.log(error);
+            });
         }
       },
       deep: true,
@@ -1102,7 +1140,7 @@ export default {
 }
 
 .map_contain_title_list {
-  position: relative;
+  position: absolute;
   top: 0;
   padding-top: 5.64rem;
   left: 0px;
@@ -1112,7 +1150,7 @@ export default {
   min-height: 100vh;
 
   background-color: #ffffff;
-  z-index: 5;
+  z-index: 8;
 }
 
 .map_contain_title_list_divice {
@@ -1487,6 +1525,19 @@ export default {
 </style>
 
 
-
+          <!-- // this.searchList = [
+          //   { name: "电梯", des: "this is my way" },
+          //   { name: "电梯", des: "this is my way" },
+          //   { name: "电梯", des: "this is my way" },
+          //   { name: "电梯", des: "this is my way" },
+          //   { name: "电梯", des: "this is my way" },
+          //   { name: "电梯", des: "this is my way" },
+          //   { name: "电梯", des: "this is my way" },
+          //   { name: "电梯", des: "this is my way" },
+          //   { name: "电梯", des: "this is my way" },
+          //   { name: "电梯", des: "this is my way" },
+          //   { name: "电梯", des: "this is my way" },
+          //   { name: "电梯", des: "this is my way" },
+          // ]; -->
 
  
