@@ -257,29 +257,40 @@ export default {
           name: "F4",
           mapUrl:
             "https://yd-mobile.cn/lanzhou/api/getPngData?z=[z]&x=[x]&y=[y]&f=f4",
+
+          mapUrlOut:
+            "https://yd-mobile.cn/lanzhou/api/getPngData?z=[z]&x=[x]&y=[y]&f=sw",
           roadPath: {},
         },
         F3: {
           name: "F3",
           mapUrl:
             "https://yd-mobile.cn/lanzhou/api/getPngData?z=[z]&x=[x]&y=[y]&f=f3",
+          mapUrlOut:
+            "https://yd-mobile.cn/lanzhou/api/getPngData?z=[z]&x=[x]&y=[y]&f=sw",
           roadPath: {},
         },
         F2: {
           name: "F2",
           mapUrl:
             "https://yd-mobile.cn/lanzhou/api/getPngData?z=[z]&x=[x]&y=[y]&f=f2",
+          mapUrlOut:
+            "https://yd-mobile.cn/lanzhou/api/getPngData?z=[z]&x=[x]&y=[y]&f=sw",
           roadPath: {},
         },
         F1: {
           name: "F1",
           mapUrl:
             "https://yd-mobile.cn/lanzhou/api/getPngData?z=[z]&x=[x]&y=[y]&f=f1",
+          mapUrlOut:
+            "https://yd-mobile.cn/lanzhou/api/getPngData?z=[z]&x=[x]&y=[y]&f=sw",
           roadPath: {},
         },
         B1: {
           name: "B1",
           mapUrl: "https://yd-mobile.cn/lanzhou/api/g",
+          mapUrlOut:
+            "https://yd-mobile.cn/lanzhou/api/getPngData?z=[z]&x=[x]&y=[y]&f=sw",
           roadPath: {},
         },
       },
@@ -752,6 +763,14 @@ export default {
       if (this.xyzTileLayer) {
         this.map.remove(this.xyzTileLayer);
       }
+      if (this.xyzTileLayerOut) {
+        this.map.remove(this.xyzTileLayerOut);
+      }
+      this.xyzTileLayerOut = new AMap.TileLayer({
+        getTileUrl: current.mapUrlOut,
+        zIndex: 90,
+      });
+      this.map.add(this.xyzTileLayerOut);
       this.xyzTileLayer = new AMap.TileLayer({
         getTileUrl: current.mapUrl,
         zIndex: 100,
