@@ -326,7 +326,6 @@ export default {
             zoom: 15,
             zooms: [2, 22],
             center: [103.684725, 36.085586],
-            viewMode: "2D",
           });
 
           that.map.on("zoomchange", function (ev) {
@@ -766,20 +765,27 @@ export default {
       if (this.xyzTileLayerOut) {
         this.map.remove(this.xyzTileLayerOut);
       }
-      this.xyzTileLayerOut = new AMap.TileLayer({
-        getTileUrl: current.mapUrlOut,
-        zooms: [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22],
-        tileSize: 256,
-        zIndex: 90,
-      });
-      this.map.add(this.xyzTileLayerOut);
       this.xyzTileLayer = new AMap.TileLayer({
         getTileUrl: current.mapUrl,
-        zooms: [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22],
         tileSize: 256,
-        zIndex: 100,
+        zooms: [6, 40],
+        dataZooms: [6, 40],
+        zIndex: 10,
+        visible: true, //是否可见
+        opacity: 1, //透明度
       });
       this.map.add(this.xyzTileLayer);
+
+      this.xyzTileLayerOut = new AMap.TileLayer({
+        getTileUrl: current.mapUrlOut,
+        tileSize: 256,
+        zooms: [6, 40],
+        dataZooms: [6, 40],
+        zIndex: 10,
+        visible: true, //是否可见
+        opacity: 1, //透明度
+      });
+      this.map.add(this.xyzTileLayerOut);
     },
 
     click_location_picker() {
