@@ -768,14 +768,14 @@ export default {
       }
       this.xyzTileLayerOut = new AMap.TileLayer({
         getTileUrl: current.mapUrlOut,
-        zooms: [11, 23],
+        zooms: [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22],
         tileSize: 256,
         zIndex: 90,
       });
       this.map.add(this.xyzTileLayerOut);
       this.xyzTileLayer = new AMap.TileLayer({
         getTileUrl: current.mapUrl,
-        zooms: [11, 23],
+        zooms: [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22],
         tileSize: 256,
         zIndex: 100,
       });
