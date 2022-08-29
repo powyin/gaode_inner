@@ -213,7 +213,7 @@
       </div>
     </div>
 
-    <div class="zoom_show">{{ zoom }}</div>
+    <!-- <div class="zoom_show">{{ zoom }}</div> -->
   </div>
 </template>
 <script>
