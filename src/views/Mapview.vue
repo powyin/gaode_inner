@@ -213,7 +213,7 @@
       </div>
     </div>
 
-    <!-- <div class="zoom_show">{{ zoom }}</div> -->
+    <div class="zoom_show">{{ zoom }}</div>
   </div>
 </template>
 <script>
@@ -326,7 +326,7 @@ export default {
             zoom: 15,
             zooms: [2, 22],
             center: [103.684725, 36.085586],
-            viewMode: "3D",
+            viewMode: "2D",
           });
 
           that.map.on("zoomchange", function (ev) {
@@ -768,11 +768,15 @@ export default {
       }
       this.xyzTileLayerOut = new AMap.TileLayer({
         getTileUrl: current.mapUrlOut,
+        zooms: [11, 23],
+        tileSize: 256,
         zIndex: 90,
       });
       this.map.add(this.xyzTileLayerOut);
       this.xyzTileLayer = new AMap.TileLayer({
         getTileUrl: current.mapUrl,
+        zooms: [11, 23],
+        tileSize: 256,
         zIndex: 100,
       });
       this.map.add(this.xyzTileLayer);
