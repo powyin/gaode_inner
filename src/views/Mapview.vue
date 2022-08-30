@@ -294,8 +294,6 @@ export default {
           roadPath: {},
         },
       },
-
-      top: 0,
     };
   },
   computed: {
@@ -762,30 +760,30 @@ export default {
       if (this.xyzTileLayer) {
         this.map.remove(this.xyzTileLayer);
       }
-      if (this.xyzTileLayerOut) {
-        this.map.remove(this.xyzTileLayerOut);
-      }
+
       this.xyzTileLayer = new AMap.TileLayer({
         getTileUrl: current.mapUrl,
         tileSize: 256,
         zooms: [6, 40],
         dataZooms: [6, 40],
-        zIndex: 10,
+        zIndex: 101,
         visible: true, //是否可见
         opacity: 1, //透明度
       });
       this.map.add(this.xyzTileLayer);
 
-      this.xyzTileLayerOut = new AMap.TileLayer({
-        getTileUrl: current.mapUrlOut,
-        tileSize: 256,
-        zooms: [6, 40],
-        dataZooms: [6, 40],
-        zIndex: 10,
-        visible: true, //是否可见
-        opacity: 1, //透明度
-      });
-      this.map.add(this.xyzTileLayerOut);
+      if (!this.xyzTileLayerOut) {
+        this.xyzTileLayerOut = new AMap.TileLayer({
+          getTileUrl: current.mapUrlOut,
+          tileSize: 256,
+          zooms: [6, 40],
+          dataZooms: [6, 40],
+          zIndex: 100,
+          visible: true, //是否可见
+          opacity: 1, //透明度
+        });
+        this.map.add(this.xyzTileLayerOut);
+      }
     },
 
     click_location_picker() {
@@ -854,8 +852,8 @@ export default {
         quer += "tlng=" + target.lng + "&";
         quer += "tlat=" + target.lat + "&";
 
-        console.log("driving_out_go" + "/pages/yd/openWxMap" + quer);
-        wx.miniProgram.navigateTo({ url: "/pages/yd/openWxMap" + quer });
+        console.log("driving_out_go" + "/wxcomponents/pages/yd/openWxMap" + quer);
+        wx.miniProgram.navigateTo({ url: "/wxcomponents/pages/yd/openWxMap" + quer });
       }
     },
 
@@ -885,8 +883,8 @@ export default {
             "&";
         }
         // console.log(this.roadPartOutDetail);
-        // console.log("driving_out_go" + "/pages/yd/camera" + quer);
-        wx.miniProgram.navigateTo({ url: "/pages/yd/camera" + quer });
+        console.log("driving_out_go" + "/wxcomponents/pages/yd/camera" + quer);
+        wx.miniProgram.navigateTo({ url: "/wxcomponents/pages/yd/camera" + quer });
       }
     },
   },

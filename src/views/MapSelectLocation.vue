@@ -110,29 +110,40 @@ export default {
           name: "F4",
           mapUrl:
             "https://yd-mobile.cn/lanzhou/api/getPngData?z=[z]&x=[x]&y=[y]&f=f4",
+
+          mapUrlOut:
+            "https://yd-mobile.cn/lanzhou/api/getPngData?z=[z]&x=[x]&y=[y]&f=sw",
           roadPath: {},
         },
         F3: {
           name: "F3",
           mapUrl:
             "https://yd-mobile.cn/lanzhou/api/getPngData?z=[z]&x=[x]&y=[y]&f=f3",
+          mapUrlOut:
+            "https://yd-mobile.cn/lanzhou/api/getPngData?z=[z]&x=[x]&y=[y]&f=sw",
           roadPath: {},
         },
         F2: {
           name: "F2",
           mapUrl:
             "https://yd-mobile.cn/lanzhou/api/getPngData?z=[z]&x=[x]&y=[y]&f=f2",
+          mapUrlOut:
+            "https://yd-mobile.cn/lanzhou/api/getPngData?z=[z]&x=[x]&y=[y]&f=sw",
           roadPath: {},
         },
         F1: {
           name: "F1",
           mapUrl:
             "https://yd-mobile.cn/lanzhou/api/getPngData?z=[z]&x=[x]&y=[y]&f=f1",
+          mapUrlOut:
+            "https://yd-mobile.cn/lanzhou/api/getPngData?z=[z]&x=[x]&y=[y]&f=sw",
           roadPath: {},
         },
         B1: {
           name: "B1",
           mapUrl: "https://yd-mobile.cn/lanzhou/api/g",
+          mapUrlOut:
+            "https://yd-mobile.cn/lanzhou/api/getPngData?z=[z]&x=[x]&y=[y]&f=sw",
           roadPath: {},
         },
       },
@@ -195,12 +206,30 @@ export default {
       if (this.xyzTileLayer) {
         this.map.remove(this.xyzTileLayer);
       }
+
       this.xyzTileLayer = new AMap.TileLayer({
-        // 图块取图地址
         getTileUrl: current.mapUrl,
-        zIndex: 100,
+        tileSize: 256,
+        zooms: [6, 40],
+        dataZooms: [6, 40],
+        zIndex: 101,
+        visible: true, //是否可见
+        opacity: 1, //透明度
       });
       this.map.add(this.xyzTileLayer);
+
+      if (!this.xyzTileLayerOut) {
+        this.xyzTileLayerOut = new AMap.TileLayer({
+          getTileUrl: current.mapUrlOut,
+          tileSize: 256,
+          zooms: [6, 40],
+          dataZooms: [6, 40],
+          zIndex: 100,
+          visible: true, //是否可见
+          opacity: 1, //透明度
+        });
+        this.map.add(this.xyzTileLayerOut);
+      }
     },
 
     location_start() {
