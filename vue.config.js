@@ -1,3 +1,5 @@
+const path = require("path")
+
 module.exports = {
      //生产环境是否要生成 sourceMap
      productionSourceMap: false,
@@ -15,5 +17,19 @@ module.exports = {
          host:'0.0.0.0',
          https:false,
          open:true
-     }
+     },
+    //  alias: {
+    //     '@': path.resolve(__dirname, 'src')
+    //  },
+     css: {
+        loaderOptions: {
+            sass: {
+                // 全局sass变量	
+                //sass-loader 8.0.0以前版本（包含）
+                // additionalData: `@import "@/assets/scss/_variable.scss";`
+                // additionalData: `@import "/@/style/init.scss"; @import "/@/assets/scss/index.scss";`
+            }
+        }
+    },
+ 
 }

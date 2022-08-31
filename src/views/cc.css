@@ -1,0 +1,23 @@
+.service-content {
+  background: #fff;
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  z-index: 99;
+  border-radius: 24rpx 24rpx 0rpx 0rpx;
+  padding: 24rpx 0rpx;
+  width: 100%;
+  box-sizing: border-box;
+  .service-content-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #2d3339;
+    font-size: 32rpx;
+    image {
+      margin-right: 10rpx;
+      width: 30rpx;
+      height: 30rpx;
+    }
+  }
+}
