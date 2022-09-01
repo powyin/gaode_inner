@@ -56,7 +56,7 @@
 
     <div class="service-content">
       <div class="service-content-title">
-        <img src="../static/imgs/service/title_icon.png"/>便民服务
+        <img src="../static/imgs/service/title_icon.png" />便民服务
       </div>
       <div class="serviceList">
         <div
@@ -64,7 +64,7 @@
           v-for="(item, index) in serviceList"
           :key="index"
         >
-          <img :src="item.img"/>
+          <img :src="item.img" />
           <div>{{ item.name }}</div>
         </div>
       </div>
@@ -189,9 +189,9 @@ export default {
         .then((AMap) => {
           that.AMap = AMap;
           that.map = new AMap.Map("container", {
-            zoom: 17,
+            zoom: 15,
             zooms: [2, 22],
-            center: [103.684725, 36.085586],
+            center: [103.684725, 36.081586],
           });
 
           that.map.on("zoomchange", function (ev) {
@@ -305,7 +305,7 @@ export default {
   position: fixed;
   width: 2.01rem;
   left: 1.2rem;
-  bottom: 8.5rem;
+  bottom: 15.5rem;
   background-color: #ffffff;
   border-radius: 2rem;
   box-shadow: 0px 0px 6px #888888;
@@ -386,8 +386,8 @@ export default {
   left: 0;
   bottom: 0;
   z-index: 99;
-  border-radius: 24rpx 24rpx 0rpx 0rpx;
-  padding: 24rpx 0rpx;
+  border-radius: 12px 12px 0px 0px;
+  padding: 12px 0px;
   width: 100%;
   box-sizing: border-box;
   .service-content-title {
@@ -395,27 +395,27 @@ export default {
     align-items: center;
     justify-content: center;
     color: #2d3339;
-    font-size: 32rpx;
-    image {
-      margin-right: 10rpx;
-      width: 30rpx;
-      height: 30rpx;
+    font-size: 0.9rem;
+    img {
+      margin-right: 5px;
+      width: 15px;
+      height: 15px;
     }
   }
   .serviceList {
     display: flex;
     flex-wrap: wrap;
-    padding-bottom: 30rpx;
+    padding-bottom: 15px;
     > div {
       width: 25%;
       text-align: center;
-      font-size: 28rpx;
+      font-size: 14px;
       color: #2d3339;
-      margin-top: 32rpx;
-      image {
-        width: 80rpx;
-        height: 80rpx;
-        margin-bottom: 10rpx;
+      margin-top: 16px;
+      img {
+        width: 40px;
+        height: 40px;
+        margin-bottom: 5px;
       }
     }
   }
